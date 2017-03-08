@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="balisage-1-3.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<?xml-stylesheet type="text/xsl" href="balisage-proceedings-html.xsl"?>
+<article xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <title>Pipelines</title>
+  <info>
+    <abstract>
+      <para>Abstract text will go here</para>
+    </abstract>
+    <author>
+      <personname>
+        <firstname>David</firstname>
+        <othername>J.</othername>
+        <surname>Birnbaum</surname>
+      </personname>
+      <personblurb>
+        <para>David J. Birnbaum is Professor and Chair of the Department of Slavic Languages and
+          Literatures at the University of Pittsburgh. He has been involved in the study of
+          electronic text technology since the mid-1980s, has delivered presentations at a variety
+          of electronic text technology conferences, and has served on the board of the Association
+          for Computers and the Humanities, the editorial board of <emphasis role="ital">Markup
+            languages: Theory and practice</emphasis>, and the Text Encoding Initiative Council.
+          Much of his electronic text work intersects with his research in medieval Slavic
+          manuscript studies, but he also often writes about issues in the philosophy of
+          markup.</para>
+      </personblurb>
+      <affiliation>
+        <jobtitle>Professor and Chair</jobtitle>
+        <orgname>Department of Slavic Languages and Literatures, University of Pittsburgh</orgname>
+      </affiliation>
+      <email>djbpitt@gmail.com</email>
+      <link xlink:type="simple" xlink:show="new" xlink:actuate="onRequest"
+        >http://www.obdurodon.org</link>
+    </author>
+    <keywordset role="author">
+      <keyword>pipeline</keyword>
+    </keywordset>
+  </info>
+  <section>
+    <title>Introduction</title>
+    <para><!--Add introductory paragraph here--></para>
+  </section>
+  <section>
+    <title>Stuff</title>
+    <para>I read Michael's article with interest, and especially the observation that the processing
+      quagmire isn't push or pull, but transitions (in either direction) between them. Michael
+      writes about the inner workings of Saxon, with the idea of avoiding the overhead of creating
+      intermediate structures by streaming that which is streamable. For the rest of us, though,
+      although Michael advises us about how to write code that is capable of operating without
+      building an interim tree in memory (or other inefficiencies), whether our code takes advantage
+      of the potential for efficiency is largely inside the black box. And while Michael has put a
+      window in the box, it still operates at a lower level, one that invites us to operate on its
+      terms, but where only a Java programmer with access to the source code can control whether it
+      turns our potentially efficient code into real efficiency. None of this problematic; it just
+      reminds me that the end-user benefits from cooperating with the efficiencies available in the
+      application, but ultimately optimization is out of our control.</para>
+    <para>What I've been thinking of in connection with pipelining grows out of our earlier
+      correspondence about the "visitor pattern" (which I had never heard of previously) and related
+      issues. The challenge I was trying to address was that a single XSLT stylesheet affords
+      several ways of building pipelines, each of which has its own advantages and disadvantages
+      with respect to legibility and ease of use (for the coder), which are a higher priority for me
+      than execution efficiency (see below). For example, function1(function2(function3(input)))
+      invites misplaced punctuation, especially as the number of embedded functions grows and if any
+      of the functions takes more than one argument. Template processing benefits from isolating
+      each operation, similarly to functional decomposition, but it's difficult to see the entire
+      pipeline at a glance. The visitor pattern that you recommended is more legible (and therefore
+      manageable) than either of the alternatives, but it operates at an additional level of
+      abstraction that keeps it from being intuitive (which is a solipsistic way of saying that it
+      didn't occur to me as an option until you suggested it). Along a different thread that's part
+      of the same garment, I often need to transform someone else's gnarly non-Unicode slop into
+      Unicode, and the character mappings may be a combination of one-to-one, one-to-many,
+      many-to-one, and many-to-many. Some of operations are critically ordered for reasons that in
+      linguistics are termed "feeding" and "bleeding"; others can happen in any order. I've
+      developed a table-driven approach for managing these types of transformations, which I don't
+      consider especially profound or clever, but it does improve legibility over explicit nested
+      function calls. The table-driven approach calls a replace() function by running sibling
+      recursion on the mapping table (with a few details to accommodate order constraints), and the
+      table is legible in the same way as the list of template invocations in the visitor strategy.
+      My character-mapping operation finishes with the dynamic construction of arguments 2 and 3 to
+      translate() to handle the one-to-one mappings at the end of the process; those could
+      alternatively be handled by continuing the replace() pipeline, but translate() is more
+      efficient, and it has other advantages for one-to-one mapping (such as the ability to do
+      translate($stuff,'xy','yx') without having to create an intermediate representation to avoid
+      unwanted feeding of one replacement into another.</para>
+    <para>As I've been crafting bespoke solutions to these types of pipelining problems over the
+      years, I've wished for a tutorial that would list the options, say something smart about the
+      advantages and disadvantages of each, point out where they behave similarly or differently
+      from one another, and perhaps make recommendations for deciding among them in the field. That
+      tutorial is the vague target I had in mind for a Balisage submission. I was less interested in
+      the scalability and streamability on which Michael focuses not only because I don't control
+      what happens inside the black box, but also because in my world the data have never been so
+      voluminous that my coffee has gotten cold while I waited for a transformation to run to
+      completion. So while computational efficiency is self-evidently better than computational
+      inefficiency, legibility is of more value to me, since otherwise I lose more time trying to
+      understand my code than I lose running it.</para>
+  </section>
+  <!-- Kay 2009: "Performance problems arise when components with different polarity are mixed within the same pipeline." -->
+  <bibliography>
+    <title>Works cited</title>
+    <bibliomixed xml:id="fuller_2016" xreflabel="Fuller 2016">Fuller, James. <quote>A catalog of
+        functional programming idioms in XQuery 3.1.</quote> Presented at <emphasis role="ital"
+        >Balisage: The Markup Conference 2016, Washington, DC, August 2 - 5, 2016.</emphasis> In
+      Proceedings of Balisage: The Markup Conference 2016. <emphasis role="ital">Balisage series on
+        markup technologies,</emphasis> vol. 17 (2016). DOI: 10.4242/BalisageVol17.Fuller01.
+        <link>https://www.balisage.net/Proceedings/vol17/html/Fuller01/BalisageVol17-Fuller01.html</link></bibliomixed>
+    <bibliomixed xml:id="kay_2009" xreflabel="Kay 2009">Kay, Michael. <quote>You pull, I’ll push: on
+        the polarity of pipelines.</quote> Presented at <emphasis role="ital">Balisage: The Markup
+        Conference 2009, Montréal, Canada, August 11 - 14, 2009.</emphasis> In <emphasis role="ital"
+        >Proceedings of Balisage: The Markup Conference 2009. Balisage series on markup
+        technologies, vol. 3 (2009). DOI: 10.4242/BalisageVol3.Kay01.</emphasis>
+      <link>https://www.balisage.net/Proceedings/vol3/html/Kay01/BalisageVol3-Kay01.html</link></bibliomixed>
+    <bibliomixed xml:id="piez_2016" xreflabel="Piez 2016">Piez, Wendell. <quote>Framing the problem:
+        building customized editing environments and workflows.</quote> Presented at <emphasis
+        role="ital">Balisage: The Markup Conference 2016, Washington, DC, August 2 - 5,
+        2016.</emphasis> In <emphasis role="ital">Proceedings of Balisage: The Markup Conference
+        2016. Balisage series on markup technologies</emphasis>, vol. 17 (2016). DOI:
+      10.4242/BalisageVol17.Piez01.
+        <link>https://www.balisage.net/Proceedings/vol17/html/Piez01/BalisageVol17-Piez01.html</link></bibliomixed>
+  </bibliography>
+</article>
