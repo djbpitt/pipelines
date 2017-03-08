@@ -93,6 +93,8 @@
       completion. So while computational efficiency is self-evidently better than computational
       inefficiency, legibility is of more value to me, since otherwise I lose more time trying to
       understand my code than I lose running it.</para>
+    <para>The essential principle of JSP was the idea that the structure of the program should
+      mirror the structure of the data. (Kay 2009)</para>
   </section>
   <!-- Kay 2009: "Performance problems arise when components with different polarity are mixed within the same pipeline." -->
   <bibliography>
