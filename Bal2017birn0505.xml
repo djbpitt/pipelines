@@ -2,10 +2,15 @@
 <?xml-model href="balisage-1-3.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
 <?xml-stylesheet type="text/xsl" href="balisage-proceedings-html.xsl"?>
 <article xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
-  <title>Pipelines</title>
+  <title>Patterns and antipatterns in micropipelining within XSLT</title>
   <info>
     <abstract>
-      <para>Abstract text will go here</para>
+      <para>This report explores patterns and antipatterns for pipelining functions within an XSLT
+        stylesheet. The program logic of pipelining can often be expressed most directly by nesting
+        functions within one another, but code that depends on nested functions may quickly become
+        unreadable, especially if the number of functions is large or if they accept multiple
+        parameters. This report examines alternative structural and syntactic expressions of
+        processing pipelines.</para>
     </abstract>
     <author>
       <personname>
@@ -37,8 +42,69 @@
     </keywordset>
   </info>
   <section>
-    <title>Introduction</title>
-    <para><!--Add introductory paragraph here--></para>
+    <title>Pipelining and micropipelining: an introduction</title>
+    <para><emphasis role="bold">Pipelining</emphasis> describes the process of using the output of a
+      function or similar operation as the input to a subsequent function or similar operation. For
+      example, if we wish to convert a string to upper case and normalize white space within it, we
+      can pass our original input string through a pipeline that combines the XPath
+        <code>upper-case()</code> and <code>normalize-space()</code> functions in either order. If
+      our original input string reads <code>Hi,&#xa0;&#xa0;Mom!</code> (with two spaces between the
+      words), we can first apply the <code>upper-case()</code> function (yielding
+        <code>HI,&#xa0;&#xa0;MOM!</code>, still with two spaces between the words) and then use the
+      output of applying the <code>upper-case()</code> function as input into the
+        <code>normalize-space()</code> function, which collapses the two consecutive space
+      characters into one. Or we can apply the functions in the opposite order. In this example and
+      many other pipelines, the order in which the functions are applied does not affect the result;
+      for a discussion of situations where it does, see the discussion of character-set conversion,
+      below.</para>
+    <para>Pipes trace their origin as a dominant process-control architecture to a typed note by
+      Doug McIlroy in 1964, a summary of <quote>what’s most important</quote> that says that
+        <quote>We should have some ways of coupling programs like garden hose—crew in another
+        segment when it becomes when it becomes necessary to massage data in another
+        way</quote>.<xref linkend="mcilroy_1964"/> But beyond using the output of one process as
+      input to the next, pipelining affords computation efficiency by making it possible to stream
+      the flow of information, ootentially avoiding the overhead of building intermediate structures
+      or writing intermediate output of the first process to disk and then reading it from disk into
+      the input of the next process. Whether an application takes advantage of this possibility
+      depends on the implementation, but although is similar in some respects to saving and reusing
+      intermediate results, pipelining in a functional environment that supports streaming and
+      multiprocessing has the potential of offering performance benefits by eschewing the creation
+      of intermediate storage objects in variables or in disk files.</para>
+  </section>
+  <section>
+    <title>Patterns and antipatterns</title>
+    <para><!--RESUME HERE: DEFINE PATTERN--> The term <emphasis role="bital">antipattern</emphasis>
+      was introduced by Andrew Koenig in 1995 to describe something that looks like a paradigm for a
+      solution to a common type of problem, but that for structural reasons leads to results that
+      cannot live up to expectations.<xref linkend="koenig_1995"/> As used in this report, it helps
+      us focus on the strengths and weaknesses of alternative strategies for pipelining within
+      XSLT.</para>
+  </section>
+  <section>
+    <title>Nested functions</title>
+    <para>Stuff about nested functions</para>
+  </section>
+  <section>
+    <title>Calling templates</title>
+    <para>Stuff about calling templates</para>
+  </section>
+  <section>
+    <title>The visitor pattern</title>
+    <para>Stuff about the visitor pattern</para>
+  </section>
+  <section>
+    <title>nested calls to the replace() functions</title>
+    <para>Stuff about character-set conversion using table-driven sibling recursion with
+      replace()</para>
+  </section>
+  <section>
+    <title>Micropipelining in context</title>
+    <para>Pipelining within a stylesheet, across stylesheets, and within the XSLT processor (citing
+      Kay)</para>
+  </section>
+  <section>
+    <title>Conclusion</title>
+    <para>Generalizations</para>
   </section>
   <section>
     <title>Stuff</title>
@@ -111,6 +177,13 @@
         >Proceedings of Balisage: The Markup Conference 2009. Balisage series on markup
         technologies, vol. 3 (2009). DOI: 10.4242/BalisageVol3.Kay01.</emphasis>
       <link>https://www.balisage.net/Proceedings/vol3/html/Kay01/BalisageVol3-Kay01.html</link></bibliomixed>
+    <bibliomixed xml:id="koenig_1995" xreflabel="Koenig 1995"><quote>Patterns and
+        antipatterns.</quote>
+      <emphasis role="ital">Journal of object-oriented programming</emphasis> 8(1): 46-48
+      (1995)</bibliomixed>
+    <bibliomixed xml:id="mcilroy_1964" xreflabel="McIlroy 1964"><quote>The origin of Unix
+        pipes,</quote> Bell Labs document archive.
+      <link>http://doc.cat-v.org/unix/pipes/</link></bibliomixed>
     <bibliomixed xml:id="piez_2016" xreflabel="Piez 2016">Piez, Wendell. <quote>Framing the problem:
         building customized editing environments and workflows.</quote> Presented at <emphasis
         role="ital">Balisage: The Markup Conference 2016, Washington, DC, August 2 - 5,
