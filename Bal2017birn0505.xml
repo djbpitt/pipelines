@@ -125,43 +125,46 @@
       antipatterns as the context becomes more complex. Scalability may be a useful feature in a
       pattern, but the strategy that is best at a high degree of contextual complexity is not
       necessarily best in simpler situations. For that reason, the discussion below avoids labeling
-      specific solutions as pattern or antipattern, and instead discusses both the strengths and
-      weaknesses, with attention to the programming context.</para>
+      specific solutions globally as pattern or antipattern, and instead discusses both the
+      strengths and weaknesses of each, with attention to the programming context.</para>
   </section>
   <section>
     <title>Micropipelining in context</title>
-    <para>Pipelining may play a role in XSLT development at at least three levels: internally,
-      within the XSLT processor; within a single stylesheet; and between or across stylesheets. We
-      describe these below by way of providing an overview; the remainder of this report then
-      concentrates on only the first of the three, on pipelining within a single XSLT
+    <para>Pipelining may play a role in XSLT development at at least three levels: 1) internally,
+      within the XSLT processor; 2) between or across stylesheets; and 3) within a single
+      stylesheet. We describe these below by way of providing an overview; the remainder of this
+      report then concentrates on only the last of the three, on pipelining within a single XSLT
       stylesheet.</para>
     <section>
-      <title>Pipelining within the XSLT processor</title>
-      <para>To most XSLT developers, pipelining within the XSLT processor is largely a black box.
-        Not only can optimizations within an XSLT processor transform XSLT instructions into
-        internal operations that achieve the same results by following different logic, but the
+      <title>1. Pipelining within the XSLT processor</title>
+      <para>To the typical XSLT developer, pipelining within the XSLT processor is a black box. Not
+        only can optimizations within an XSLT processor transform XSLT instructions into internal
+        operations that achieve the same results by following different execution logic, but the
         largely declarative XSLT programming paradigm means that the order employed by the processor
         to execute parts of a transformation is often not entirely under the control of the XSLT
         developer. This enables an XSLT processor to improve performance by executing operations in
         parallel, a feature with consequences that sometimes surprise XSLT developers who may still
         be thinking within an imperative paradigm. For example, every new XSLT programmer has tried
         at some point to profile a stylesheet by inserting the <code>current-dateTime()</code> or
-          <code>current-time()</code>function before and after an operation of interest, only to be
+          <code>current-time()</code> function before and after an operation of interest, only to be
         surprised when the operation appears to take no time at all! This happens because there is
         no promise in the XSLT processing model that these functions will be executed in the order
         in which they appear in the XSLT code, and for that reason XSLT was designed to follow a
         functional programming paradigm here:<blockquote>
           <para>In XSLT 2.0 it is defined that multiple calls on <code>current-dateTime()</code> and
-            the other two functions will return the same result every time they are called within a
-            single transformation. This means that you can’t call the function at the beginning and
-            end of the transformation to measure the elapsed time. The reason for this rule is that
-            XSLT is rather purist about being a strictly functional language, and in a strictly
-            functional language, calling the same function twice with the same arguments always
-            returns the same result. This property makes life much simpler for optimizers.<xref
-              linkend="kay_2009"/> (738)</para>
+            the other two [time and date] functions will return the same result every time they are
+            called within a single transformation. This means that you can’t call the function at
+            the beginning and end of the transformation to measure the elapsed time. The reason for
+            this rule is that XSLT is rather purist about being a strictly functional language, and
+            in a strictly functional language, calling the same function twice with the same
+            arguments always returns the same result. This property makes life much simpler for
+              optimizers.<xref linkend="kay_2009"/> (738)</para>
         </blockquote></para>
-      <para>As Michael Kay’s alliteratively titled <quote>You pull, I’ll push: on the polarity of
-          pipelines</quote>, cited above, explains:<blockquote>
+      <para>This fact of XSLT implementation means that although the XSLT developer might write code
+        that is amenable to pipelined execution, whether the pipeline is executed efficient is at
+        least partially dependent on processor-internal code to which the XSLT developer has no
+        direct access. When Michael Kay’s alliteratively titled <quote>You pull, I’ll push: on the
+          polarity of pipelines</quote>, cited above, continues that:<blockquote>
           <para>For performance, the stages of a pipeline should communicate by means of streams of
             events. Traditionally, this can be done either by writing components with pull polarity
             (the consumer calls the supplier when data is required), or by components with push
@@ -169,9 +172,18 @@
               >Performance problems arise when components with different polarity are mixed within
               the same pipeline.</emphasis><xref linkend="kay_2009"/> (emphasis added)</para>
         </blockquote></para>
-      <para>Because push and pull polarity may be determined as much within the XSLT processor as by
-        the XSLT code, it is at least partially outside the control of the XSLT developer, it will
-        not be discussed further in this XSLT-developer-oriented report.</para>
+      <para>any aspect of the polarity that is determined within the XSLT processor, rather than
+        within the XSLT code, is at least partially outside the control of the XSLT developer. In
+        this XSLT-developer-focused report, pipelining within the XSLT processor will not be
+        discussed further.</para>
+    </section>
+    <section>
+      <title>2. Pipelining between and across stylesheets</title>
+      <para>Stuff goes here</para>
+    </section>
+    <section>
+      <title>3. Micropipelining: pipelining with a single XSLT stylesheet</title>
+      <para>Stuff goes here</para>
     </section>
   </section>
   <section>
