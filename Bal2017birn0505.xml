@@ -55,30 +55,103 @@
         <code>normalize-space()</code> function, which collapses the two consecutive space
       characters into one. Or we can apply the functions in the opposite order. In this example and
       many other pipelines, the order in which the functions are applied does not affect the result;
-      for a discussion of situations where it does, see the discussion of character-set conversion,
-      below.</para>
-    <para>Pipes trace their origin as a dominant process-control architecture to a typed note by
-      Doug McIlroy in 1964, a summary of <quote>what’s most important</quote> that says that
-        <quote>We should have some ways of coupling programs like garden hose—crew in another
-        segment when it becomes when it becomes necessary to massage data in another
-        way</quote>.<xref linkend="mcilroy_1964"/> But beyond using the output of one process as
-      input to the next, pipelining affords computation efficiency by making it possible to stream
-      the flow of information, ootentially avoiding the overhead of building intermediate structures
-      or writing intermediate output of the first process to disk and then reading it from disk into
-      the input of the next process. Whether an application takes advantage of this possibility
-      depends on the implementation, but although is similar in some respects to saving and reusing
-      intermediate results, pipelining in a functional environment that supports streaming and
-      multiprocessing has the potential of offering performance benefits by eschewing the creation
-      of intermediate storage objects in variables or in disk files.</para>
+      for a situation where it does, see the discussion of character-set conversion, below.</para>
+    <para>Pipes and pipelines trace their origin as a dominant process-control architecture to a
+      typed note by Doug McIlroy in 1964, a summary of <quote>what’s most important</quote> that
+      says that <quote>We should have some ways of coupling programs like garden hose—screw in
+        another segment when it becomes when it becomes necessary to massage data in another
+        way</quote>.<xref linkend="mcilroy_1964"/> In an XSLT and XQuery context:<blockquote>
+        <para>Constructing an application in the form of a pipeline has many advantages, the main
+          ones being (a) that the code of each step in the pipeline is kept very simple; (b) that it
+          is very easy to assemble an application from a set of components, thus maximizing the
+          potential for component reuse, and (c) there is no requirement that each step in a
+          pipeline should use the same technology; it's easy to mix XSLT, XQuery, Java and so on in
+          different stages.</para>
+        <para>A number of products are available to assist with the development and management of
+          pipeline-based applications, examples being Orbeon [Orbeon] and Apache Cocoon [Cocoon].
+          More recently W3C has developed a standard language, XProc [W3C XProc], for the definition
+          of pipelines.<xref linkend="kay_2009"/></para>
+      </blockquote></para>
+    <para>Beyond using the output of one process as input to the next, pipelining affords
+      computational efficiency by making it possible to stream the flow of information, potentially
+      avoiding the overhead of building complete intermediate structures in memory or writing
+      intermediate output of the first process to disk and then reading it from disk into the input
+      of the next process. Whether an application takes advantage of this possibility depends on the
+      implementation, but although pipelining is similar in some respects to saving and reusing
+      intermediate results, in a functional environment that supports streaming and multiprocessing,
+      it has the potential of offering performance benefits by eschewing the creation of
+      intermediate storage objects in variables or in disk files and permitting data to be processed
+      as soon as it and a processing core become available.</para>
   </section>
   <section>
     <title>Patterns and antipatterns</title>
-    <para><!--RESUME HERE: DEFINE PATTERN--> The term <emphasis role="bital">antipattern</emphasis>
-      was introduced by Andrew Koenig in 1995 to describe something that looks like a paradigm for a
-      solution to a common type of problem, but that for structural reasons leads to results that
-      cannot live up to expectations.<xref linkend="koenig_1995"/> As used in this report, it helps
-      us focus on the strengths and weaknesses of alternative strategies for pipelining within
-      XSLT.</para>
+    <para>The term <emphasis role="bold">pattern</emphasis> refers to a generalizable way of
+      addressing a common and generalizable type of problem. It is used widely in object-oriented
+      programming (see, for example, <xref linkend="gamma_1994"/>), but it is not restricted to that
+      domain, and in this presentation the generalizable problem we care about is pipelining in
+      XSLT, and the generalizable strategies that are commonly employed to deal with it are our
+      patterns. The term <emphasis role="bold">antipattern</emphasis> was introduced by Andrew
+      Koenig in 1995 to describe something that looks like a paradigm for a solution to a common
+      type of problem, that is, a pattern, but that for structural reasons leads to results that do
+      not live up to <quote>best practice</quote> expectations.<xref linkend="koenig_1995"/> As used
+      in this report, the distinction between patterns and antipatterns helps us focus on the
+      strengths and weaknesses of alternative strategies for pipelining within XSLT.</para>
+    <para>It is often said that code is read more often than it is written, </para>
+    <para>The boundary between a pattern and an antipattern is not always unambiguous. Some
+      programming strategies discussed below are easy to write and read in simple situations, but
+      may scale poorly as the complexity of the context increases. Such models might be sensible
+      patterns in those simpler situations, while transforming themselves gradually into
+      antipatterns as the context becomes more complex. Scalability may be a useful feature in a
+      pattern, but the strategy that is best at a high degree of contextual complexity is not
+      necessarily best in simpler situations. For that reason, the discussion below avoids labeling
+      specific solutions as pattern or antipattern, and instead discusses both the strengths and
+      weaknesses, with attention to the programming context.</para>
+  </section>
+  <section>
+    <title>Micropipelining in context</title>
+    <para>Pipelining may play a role in XSLT development at at least three levels: internally,
+      within the XSLT processor; within a single stylesheet; and between or across stylesheets. We
+      describe these below by way of providing an overview; the remainder of this report then
+      concentrates on only the first of the three, on pipelining within a single XSLT
+      stylesheet.</para>
+    <section>
+      <title>Pipelining within the XSLT processor</title>
+      <para>To most XSLT developers, pipelining within the XSLT processor is largely a black box.
+        Not only can optimizations within an XSLT processor transform XSLT instructions into
+        internal operations that achieve the same results by following different logic, but the
+        largely declarative XSLT programming paradigm means that the order employed by the processor
+        to execute parts of a transformation is often not entirely under the control of the XSLT
+        developer. This enables an XSLT processor to improve performance by executing operations in
+        parallel, a feature with consequences that sometimes surprise XSLT developers who may still
+        be thinking within an imperative paradigm. For example, every new XSLT programmer has tried
+        at some point to profile a stylesheet by inserting the <code>current-dateTime()</code> or
+          <code>current-time()</code>function before and after an operation of interest, only to be
+        surprised when the operation appears to take no time at all! This happens because there is
+        no promise in the XSLT processing model that these functions will be executed in the order
+        in which they appear in the XSLT code, and for that reason XSLT was designed to follow a
+        functional programming paradigm here:<blockquote>
+          <para>In XSLT 2.0 it is defined that multiple calls on <code>current-dateTime()</code> and
+            the other two functions will return the same result every time they are called within a
+            single transformation. This means that you can’t call the function at the beginning and
+            end of the transformation to measure the elapsed time. The reason for this rule is that
+            XSLT is rather purist about being a strictly functional language, and in a strictly
+            functional language, calling the same function twice with the same arguments always
+            returns the same result. This property makes life much simpler for optimizers.<xref
+              linkend="kay_2009"/> (738)</para>
+        </blockquote></para>
+      <para>As Michael Kay’s alliteratively titled <quote>You pull, I’ll push: on the polarity of
+          pipelines</quote>, cited above, explains:<blockquote>
+          <para>For performance, the stages of a pipeline should communicate by means of streams of
+            events. Traditionally, this can be done either by writing components with pull polarity
+            (the consumer calls the supplier when data is required), or by components with push
+            polarity (the supplier calls the consumer when data is available). <emphasis role="ital"
+              >Performance problems arise when components with different polarity are mixed within
+              the same pipeline.</emphasis><xref linkend="kay_2009"/> (emphasis added)</para>
+        </blockquote></para>
+      <para>Because push and pull polarity may be determined as much within the XSLT processor as by
+        the XSLT code, it is at least partially outside the control of the XSLT developer, it will
+        not be discussed further in this XSLT-developer-oriented report.</para>
+    </section>
   </section>
   <section>
     <title>Nested functions</title>
@@ -96,11 +169,6 @@
     <title>nested calls to the replace() functions</title>
     <para>Stuff about character-set conversion using table-driven sibling recursion with
       replace()</para>
-  </section>
-  <section>
-    <title>Micropipelining in context</title>
-    <para>Pipelining within a stylesheet, across stylesheets, and within the XSLT processor (citing
-      Kay)</para>
   </section>
   <section>
     <title>Conclusion</title>
@@ -171,6 +239,9 @@
       Proceedings of Balisage: The Markup Conference 2016. <emphasis role="ital">Balisage series on
         markup technologies,</emphasis> vol. 17 (2016). DOI: 10.4242/BalisageVol17.Fuller01.
         <link>https://www.balisage.net/Proceedings/vol17/html/Fuller01/BalisageVol17-Fuller01.html</link></bibliomixed>
+    <bibliomixed xml:id="gamma_1994" xreflabel="Gamma 1994">Gamma, Erich, Richard Helm, Ralph
+      Johnson, and John Vlissides. <quote>Design patterns: elements of reusable object-oriented
+        software.</quote> Boston, MA: Addison-Wesley, 1994.</bibliomixed>
     <bibliomixed xml:id="kay_2009" xreflabel="Kay 2009">Kay, Michael. <quote>You pull, I’ll push: on
         the polarity of pipelines.</quote> Presented at <emphasis role="ital">Balisage: The Markup
         Conference 2009, Montréal, Canada, August 11 - 14, 2009.</emphasis> In <emphasis role="ital"
