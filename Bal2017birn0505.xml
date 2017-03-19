@@ -96,7 +96,28 @@
       not live up to <quote>best practice</quote> expectations.<xref linkend="koenig_1995"/> As used
       in this report, the distinction between patterns and antipatterns helps us focus on the
       strengths and weaknesses of alternative strategies for pipelining within XSLT.</para>
-    <para>It is often said that code is read more often than it is written, </para>
+    <para>It is often said that code is read more often than it is written, and from that
+      perspective, legibility, which contributes to ease of maintenance, is one feature that can
+      distinguish patterns from antipatterns. Another is computational complexity, and in that sense
+      scalability is another such feature (but see immediately below).<footnote>
+        <para>Donald Knuth’s oft-cited statement that <quote>premature optimization is the root of
+            all evil</quote> does not blanketly disparage optimization. The full sentence reads: <blockquote>
+            <para>Programmers waste enormous amounts of time thinking about, or worrying about, the
+              speed of noncritical parts of their programs, and these attempts at efficiency
+              actually have a strong negative impact when debugging and maintenance are considered.
+              We <emphasis role="ital">should</emphasis> forget about small efficiencies, say about
+              97% of the time: premature optimization is the root of all evil.</para>
+            <para>Yet we should not pass up our opportunities in that critical 3%.<xref
+                linkend="knuth_1974"/> (268; see also the larger context on that page)</para>
+          </blockquote></para>
+      </footnote> And <xref linkend="kay_2009"/>, in a discussion of Jackson Structured Programming,
+      writes that <quote>[t]he essential principle of JSP was the idea that the structure of the
+        program should mirror the structure of the data</quote>, continuing that this JSP can
+      contribute to both code legibility and maintenance, on the one hand, and operational
+      efficiency, on the other: <quote>the user achieves the benefits that come from writing the
+        application as a controlling application (maintainability, readability, reusability)
+        combining these with the improvements in system performance that come from using a
+        push-based control model.</quote></para>
     <para>The boundary between a pattern and an antipattern is not always unambiguous. Some
       programming strategies discussed below are easy to write and read in simple situations, but
       may scale poorly as the complexity of the context increases. Such models might be sensible
@@ -248,6 +269,9 @@
         >Proceedings of Balisage: The Markup Conference 2009. Balisage series on markup
         technologies, vol. 3 (2009). DOI: 10.4242/BalisageVol3.Kay01.</emphasis>
       <link>https://www.balisage.net/Proceedings/vol3/html/Kay01/BalisageVol3-Kay01.html</link></bibliomixed>
+    <bibliomixed xml:id="knuth_1974" xreflabel="Knuth 1974">Kunth, Donald E. <quote>Structured
+        programming with <code>go to</code> statements</quote>, Computing surveys 6(4): 261–301.
+        <link>http://web.archive.org/web/20130731202547/http://pplab.snu.ac.kr/courses/adv_pl05/papers/p261-knuth.pdf</link></bibliomixed>
     <bibliomixed xml:id="koenig_1995" xreflabel="Koenig 1995"><quote>Patterns and
         antipatterns.</quote>
       <emphasis role="ital">Journal of object-oriented programming</emphasis> 8(1): 46-48
