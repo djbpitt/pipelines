@@ -44,18 +44,27 @@
   <section>
     <title>Pipelining and micropipelining</title>
     <para><emphasis role="bold">Pipelining</emphasis> describes the process of using the output of a
-      function or similar operation as the input to a subsequent function or similar operation. For
-      example, if we wish to convert a string to upper case and normalize white space within it, we
-      can pass our original input string through a pipeline that combines the XPath
-        <code>upper-case()</code> and <code>normalize-space()</code> functions in either order. If
-      our original input string reads <code>Hi,&#xa0;&#xa0;Mom!</code> (with two spaces between the
-      words), we can first apply the <code>upper-case()</code> function (yielding
+      function or other operation as the input to a subsequent function or other operation. As an
+      example of a function pipeline, if we wish to convert a string to upper case and normalize
+      white space within it, we can pass our original input string through a pipeline that combines
+      the XPath <code>upper-case()</code> and <code>normalize-space()</code> functions in either
+      order. If our original input string reads <code>Hi,&#xa0;&#xa0;Mom!</code> (with two spaces
+      between the words), we can first apply the <code>upper-case()</code> function (yielding
         <code>HI,&#xa0;&#xa0;MOM!</code>, still with two spaces between the words) and then use the
       output of applying the <code>upper-case()</code> function as input into the
         <code>normalize-space()</code> function, which collapses the two consecutive space
       characters into one. Or we can apply the functions in the opposite order. In this example and
       many other pipelines, the order in which the functions are applied does not affect the result;
       for a situation where it does, see the discussion of feeding and bleeding orders,
+      below.</para>
+    <para>Pipelines may connect small, individual functions, as in the example above, or they may be
+      constructed at higher levels. For example, an XSLT transformation might be designed as a
+      pipeline of XSLT stylesheets, where the original input XML is passed into a transformation
+      that uses one stylesheet and creates output XML, which becomes the input XML for another
+      stylesheet, etc., until eventually the desired final output is created. <emphasis role="bold"
+        >Micropipelining</emphasis> is not well established as a technical term, and we use it in
+      this report to refer to pipelines that operate entirely within a single XSLT stylesheet,
+      whether at the level of individual functions or in some of the more complex ways described
       below.</para>
     <para>Pipes and pipelines trace their popularity as a process-control architecture to a 1964
       typed note by Doug McIlroy about Unix. In a summary of <quote>what’s most important</quote>,
