@@ -48,15 +48,14 @@
       example of a function pipeline, if we wish to convert a string to upper case and normalize
       white space within it, we can pass our original input string through a pipeline that combines
       the XPath <code>upper-case()</code> and <code>normalize-space()</code> functions in either
-      order. If our original input string reads <code>Hi,&#xa0;&#xa0;Mom!</code> (with two spaces
+      order. If our original input string reads <quote>Hi,&#xa0;&#xa0;Mom!</quote> (with two spaces
       between the words), we can first apply the <code>upper-case()</code> function (yielding
-        <code>HI,&#xa0;&#xa0;MOM!</code>, still with two spaces between the words) and then use the
-      output of applying the <code>upper-case()</code> function as input into the
+        <quote>HI,&#xa0;&#xa0;MOM!</quote>, still with two spaces between the words) and then use
+      the output of applying the <code>upper-case()</code> function as input into the
         <code>normalize-space()</code> function, which collapses the two consecutive space
       characters into one. Or we can apply the functions in the opposite order. In this example and
       many other pipelines, the order in which the functions are applied does not affect the result;
-      for a situation where it does, see the discussion of feeding and bleeding orders,
-      below.</para>
+      for situations where it does, see the discussion of feeding and bleeding orders, below.</para>
     <para>Pipelines may connect small, individual functions, as in the example above, or they may be
       constructed at higher levels. For example, an XSLT transformation might be designed as a
       pipeline of XSLT stylesheets, where the original input XML is passed into a transformation
@@ -108,8 +107,8 @@
       strengths and weaknesses of alternative strategies for pipelining within XSLT.</para>
     <para>It is often said that code is read more often than it is written, and from that
       perspective, legibility, which contributes to ease of maintenance, is one feature that can
-      distinguish patterns from antipatterns. Another is computational complexity, and in that sense
-      scalability is another such feature (but see immediately below).<footnote>
+      distinguish patterns from antipatterns. Another is computational complexity, and in that
+      context scalability is another such feature (but see immediately below).<footnote>
         <para>Donald Knuth’s oft-cited statement that <quote>premature optimization is the root of
             all evil</quote> does not blanketly disparage optimization. In narrow context it reads: <blockquote>
             <para>Programmers waste enormous amounts of time thinking about, or worrying about, the
@@ -132,13 +131,15 @@
     </blockquote>
     <para>The boundary between a pattern and an antipattern is not always unambiguous. Some
       programming strategies discussed below, such as nested functions, are easy to write and read
-      in simple situations, but may scale poorly as the complexity of the context increases. Such
-      models might be sensible patterns in those simpler situations, while transforming themselves
-      gradually into antipatterns as the context becomes more complex. Scalability may be a useful
-      feature in a pattern, but the strategy that is best at a high degree of contextual complexity
-      is not necessarily best in simpler situations. For that reason, the discussion below avoids
-      labeling specific solutions globally as pattern or antipattern, and instead discusses both the
-      strengths and weaknesses of each, with attention to the programming context.</para>
+      in simple situations (e.g., two functions, each of which takes one parameter), but may scale
+      poorly with respect to legibility or performance as the complexity of the context increases.
+      Such models might therefore be sensible patterns when applied in those simpler situations,
+      while transforming themselves gradually into antipatterns as the complexity of the context
+      increases. Scalability may be a useful feature in a pattern, but the strategy that is best at
+      a high degree of contextual complexity is not necessarily optimal in simpler situations. For
+      that reason, the discussion below avoids labeling specific solutions globally as pattern or
+      antipattern, and instead discusses both the strengths and weaknesses of each approach, with
+      attention to the programming context.</para>
   </section>
   <section>
     <title>Micropipelining in context</title>
@@ -146,14 +147,14 @@
       within the XSLT processor; 2) between or across stylesheets; and 3) within a single
       stylesheet. We describe these below by way of providing an overview; the remainder of this
       report then concentrates on only the last of the three, on pipelining within a single XSLT
-      stylesheet.</para>
+      stylesheet, which we call micropipelining.</para>
     <section>
       <title>1. Pipelining within the XSLT processor</title>
       <para>To the typical XSLT developer, pipelining within the XSLT processor is a black box. Not
         only can optimizations within an XSLT processor transform XSLT instructions into internal
         operations that achieve the same results by following different execution logic, but the
         largely declarative XSLT programming paradigm means that the order employed by the processor
-        to execute parts of a transformation is often not entirely under the control of the XSLT
+        to execute parts of a transformation is not entirely under the control of the XSLT
         developer. This enables an XSLT processor to improve performance by executing operations in
         parallel, a feature with consequences that sometimes surprise XSLT developers who may still
         be thinking within an imperative paradigm. For example, every new XSLT programmer has tried
@@ -172,11 +173,11 @@
             arguments always returns the same result. This property makes life much simpler for
             optimizers. (<xref linkend="kay_2009"/>, p. 738)</para>
         </blockquote></para>
-      <para>This fact of XSLT implementation means that although the XSLT developer might write code
-        that is amenable to pipelined execution, whether the pipeline is executed efficient is at
-        least partially dependent on processor-internal code to which the XSLT developer has no
-        direct access. Michael Kay’s alliteratively titled <quote>You pull, I’ll push: on the
-          polarity of pipelines</quote>, cited above, continues that:<blockquote>
+      <para>The functional aspects of XSLT mean that although an XSLT developer might write code
+        that is amenable to pipelined execution, how the pipeline is executed is at least partially
+        dependent on processor-internal code to which the XSLT developer has no direct access.
+        Michael Kay’s alliteratively titled <quote>You pull, I’ll push: on the polarity of
+          pipelines</quote>, cited above, continues that:<blockquote>
           <para>For performance, the stages of a pipeline should communicate by means of streams of
             events. Traditionally, this can be done either by writing components with pull polarity
             (the consumer calls the supplier when data is required), or by components with push
@@ -184,10 +185,10 @@
               >Performance problems arise when components with different polarity are mixed within
               the same pipeline.</emphasis> (<xref linkend="kay_2009"/>, emphasis added)</para>
         </blockquote></para>
-      <para>However, any aspect of the polarity that is determined within the XSLT processor, rather
-        than within the XSLT code, is at least partially outside the control of the XSLT developer.
-        For that reason, in this XSLT-developer-focused report, pipelining within the XSLT processor
-        will not be discussed further.</para>
+      <para>As important as this polarity is for performance, to the extent that it is determined
+        within the XSLT processor, rather than within the XSLT code, it is at least partially
+        outside the control of the XSLT developer. For that reason, in this XSLT-developer-focused
+        report, pipelining within the XSLT processor will not be discussed further.</para>
     </section>
     <section>
       <title>2. Pipelining between and across XSLT stylesheets</title>
@@ -203,7 +204,7 @@
         efficiency of the transformation. Whether that matters it likely to depend on the volume of
         data; augmenting the execution time by an order of magnitude may not matter to the developer
         if the overall time is still subjectively brief.</para>
-      <para>The overhead of disk I/O can be avoided by using pipelining utilities, whether general
+      <para>The overhead of disk I/O can be avoided by using pipelining utilities, whether broader
         purpose (such as Apache Cocoon [<xref linkend="cocoon"/>]) or XML specific (XProc [<xref
           linkend="XProc"/>]). Pipelining tools avoid the overhead of disk I/O, although whether
         they build complete intermediate in-memory structures or decompose (and perhaps parallelize)
@@ -220,33 +221,33 @@
         report is on micropipelining, that is, on pipelines implemented within a single XSLT
         stylesheet, and we will not explore XProc or other technologies for pipelining between or
         across stylesheets, except to note that whether to implement a pipeline within a single
-        stylesheets or between or across stylesheets is a separate consideration that is beyond the
-        scope of the present report.</para>
+        stylesheets or between or across stylesheets is a separate consideration that lies outside
+        the within-stylesheet scope of the present report.</para>
     </section>
     <section>
       <title>3. Micropipelining: pipelining within a single XSLT stylesheet</title>
-      <para>We use the term <emphasis role="bold">micropipelining</emphasis> to refer to pipelining
-        within a single XSLT stylesheet. Micropipelines implemented within a single stylesheet can
-        always be refactored and spread across multiple stylesheets, but in situations where the
-        steps are conceptually part of what a human would consider a single operation, and where
-        intermediate stages are unlikely to be important except for debugging purposes, combining
-        them within a single XSLT stylesheet that performs that single operation may make for easier
+      <para>As mentioned above, we use the term micropipelining to refer to pipelining within a
+        single XSLT stylesheet. Micropipelines implemented within a single stylesheet can always be
+        refactored and spread across multiple stylesheets, but in situations where the steps are
+        conceptually part of what a human would consider a single operation, and where intermediate
+        stages are unlikely to be important except for debugging purposes, combining them within a
+        single XSLT stylesheet that performs that single operation may make for easier
         implementation and maintenance.</para>
       <para>The application that motivated this exploration is connected to our use of XML
         technologies to identify and analyze meter and rhyme in Russian verse. We presented a report
         on the identification of meter at Balisage 2015 (<xref linkend="birnbaum_2015"/>), and in
         order also to identify rhyme we need to convert normal Russian orthography to a phonetic
         representation. As long as the place of stress is known (and that information was provided
-        as part of the analysis of meter), the phonetic conversion turns out to be easier in Russian
-        than in English because Russian orthography, although not phonetic, is closer to the
-        phonetics of the language than is the case with English.</para>
+        as part of the analysis of meter), the phonetic conversion, although complex, turns out to
+        be easier in Russian than in English because Russian orthography, although not phonetic, is
+        closer to the phonetics of the language than is the case with English.</para>
       <para>It is common in historical linguistics to describe language change in terms of the
         application of ordered rules as a pipeline that accepts an initial form as input, pipes it
-        through a sequence of individual sound-change rules, and generates transformed output.
-        Constraints on the order in which rules apply are traditionally described using alimentary
-        and sanguinary metaphors, and they are based on the linguistic reality that sound change may
-        happen at a certain point in history and then cease to operate, that is, cease to be a
-        productive process:</para>
+        (that is, passes it along) through a sequence of individual sound-change rules, and
+        generates transformed output. Constraints on the order in which rules apply are
+        traditionally described using alimentary and sanguinary metaphors, and they are based on the
+        linguistic realities that sound change may happen at a certain point in history and then
+        cease to operate, that is, cease to be a productive process:</para>
       <itemizedlist>
         <listitem>
           <para><emphasis role="bold">Feeding order.</emphasis> The output of one rule creates new
@@ -306,18 +307,19 @@
       <para>As the name implies, <emphasis role="bold">convenience variables</emphasis> are
         variables created for the benefit of the programmer, and not because they necessarily
         improve the efficiency or operation of the program. The purpose of convenience variables is
-        typically that they improve the legibility of the code, which makes it easier to develop
-        (one process at a time) and maintain.</para>
+        that typically they improve the legibility of the code, which makes it easier to develop
+        (one piece at a time) and maintain.</para>
       <para>Variables that improve the efficiency of the transformation are not convenience
         variables (although they may also be convenient). For example, if we need to calculate the
         same result more than once in an XSLT stylesheet, performing the calculation only once and
         saving it in a variable that we can then reuse may reduce the amount of computation and
         improve the performance of the transformation. On the other hand, when we calculate a value
-        that we will use only once, save it in a variable, and then use the variable, we risk
-        reducing the efficiency of the transformation by imposing the overhead needed to create an
-        intermediate structure. Within XSLT, this is especially the case when variables are declared
-        without explicit typing using the <code>@as</code> attribute, which results in the expensive
-        creation of a temporary in-memory document to hold the value.<footnote>
+        that we will use only once, save it in a variable, and then use the variable, not only is
+        there no similar saving, but we actually risk reducing the efficiency of the transformation
+        by imposing the overhead needed to create an intermediate structure. Within XSLT, this is
+        especially the case when variables are declared without explicit typing using the
+          <code>@as</code> attribute, which results in the expensive creation of a temporary
+        in-memory document (that we may not need) to hold the value.<footnote>
           <para><quote>If a sequence constructor is used with no <code>as</code> attribute, a
               temporary document is constructed. This is done by creating a new document node and
               using the value of the result sequence to form the children of the document
@@ -326,7 +328,7 @@
               linkend="kay_2008"/>, p. 510ff.</para>
         </footnote></para>
       <para>As an example of a convenience variable, consider an XSLT transformation to SVG where we
-        need to calculate the <code>@x</code> and <code>@y</code> coordinates of an object and then
+        need to calculate the <code>x</code> and <code>y</code> coordinates of an object and then
         plot it. If those calculations are complex, packing them into the declaration of the object
         may compromise its transparency. Compare the version with convenience variables:</para>
       <programlisting>&lt;xsl:variable name="xPos" as="xs:double" select="position() * $xScale"/&gt;
@@ -334,8 +336,8 @@
 &lt;rect x={$xPos} y="-{$yPos}" width="{$width}" height="{$yPos}"/></programlisting>
       <para>to one without:</para>
       <programlisting>&lt;rect x={position() * $xScale} y="-{. * $yScale}" width="{$width}" height="{. * $yScale}"/></programlisting>
-      <para>The more complex the calculation, the more the legibility is improved by the creation of
-        convenience variables.<footnote>
+      <para>The more complex the calculation, the more the legibility may be improved through the
+        use of convenience variables.<footnote>
           <para>In this case, the reuse of the same value in the <code>@y</code> and
               <code>@height</code> attributes means that the variable is not merely a matter of
             convenience, since that reuse also means that the same expression does not have to be
@@ -343,7 +345,7 @@
         </footnote></para>
       <para>Convenience variables may play a role in pipelining when the result of one function is
         passed to another. For example,</para>
-      <programlisting>&lt;xsl:value-of select="func2(funct1($x))"/&gt;</programlisting>
+      <programlisting>&lt;xsl:value-of select="func2(func1($x))"/&gt;</programlisting>
       <para>may be rewritten as:</para>
       <programlisting>&lt;xsl:variable name="y" select="func1($x)"/&gt;
 &lt;xsl:value-of select="func2($y)"&gt;</programlisting>
@@ -351,13 +353,45 @@
         greater detail below. The distinction between convenience variables and those that
         contribute to the quality of the code in ways that are not limited to human legibility is
         important because the costs and benefits of creating variables to hold intermediate values
-        must be evaluated differently depending on whether using the variable convey advantages
-        beyond convenience, that is, beyond the legibility that supports ease of maintenance.</para>
+        must take into consideration whether using the variable convey advantages beyond
+        convenience, that is, beyond the legibility that supports ease of maintenance.</para>
     </section>
     <section>
       <title>Nested functions</title>
-      <para>Lisp (LISt Processor), Lots of Irritating Silly Parentheses and others . Stuff about
-        nested functions, Chaining. Map. With and without variables. Multiple parameters.</para>
+      <!-- Lisp (LISt Processor), Lots of Irritating Silly Parentheses and others . Stuff about
+        nested functions, Chaining. Map. With and without variables. Multiple parameters.-->
+      <para>One of the most natural types of micropipelining involves the nesting of functions, as
+        in the example earlier that combines <code>normalize-space()</code> and
+          <code>upper-case()</code> by nesting one inside the other. This simple nested structure
+        involves only two functions, each of which accepts only one parameter, but as the number of
+        functions and the number of parameters grows, it is easy to lose one’s place in the forest
+        of parentheses. Consider, for example, a situation using the Wordhoard TEI edition of
+          <emphasis role="ital">Hamlet</emphasis>
+          (<link>http://www.wwp.northeastern.edu/outreach/seminars/xslt_2012-03/demos/xslt_intro/ham.xml</link>),
+        where our task is to construct a comma-separated list of distinct speakers (from the
+          <code>&lt;speaker&gt;</code> element children of the <code>&lt;sp&gt;</code> speech
+        elements) in Act 4. We can retrieve a deduplicated list of all &lt;speaker&gt; values with a
+        single XPath function wrapped around a single path expressions:
+          <code>distinct-values(//body/div[4]//speaker)</code>. The catch is that this list includes
+        not only <quote>Rosencrantz</quote> and <quote>Guildenstern</quote>, both of whom speak
+        alone, but also <quote>Rosencrantz and Guildenstern</quote> (as the string content of a
+        single <code>&lt;speaker&gt;</code> element) where they speak in unison. For reasons of legibility
+      we could  process this in multiple steps, saving the results of each in a convenience variable, but
+      it is also possible to perform the operation in a single line using nested functions:</para>
+      <programlisting>
+<!--        
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="xs" version="2.0"
+    xpath-default-namespace="http://www.tei-c.org/ns/1.0">
+    <xsl:output method="text"/>
+    <xsl:template match="/">
+        <xsl:value-of select="tokenize(string-join(distinct-values(//body/div[4]//speaker/replace(.,' and ', ' ')), ' '), '\s+')"/>
+    </xsl:template>
+</xsl:stylesheet>
+        
+-->        
+      </programlisting>
     </section>
     <section>
       <title>Calling templates</title>
