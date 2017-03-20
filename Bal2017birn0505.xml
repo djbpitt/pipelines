@@ -42,7 +42,7 @@
     </keywordset>
   </info>
   <section>
-    <title>Pipelining and micropipelining: an introduction</title>
+    <title>Pipelining and micropipelining</title>
     <para><emphasis role="bold">Pipelining</emphasis> describes the process of using the output of a
       function or similar operation as the input to a subsequent function or similar operation. For
       example, if we wish to convert a string to upper case and normalize white space within it, we
@@ -181,7 +181,7 @@
         will not be discussed further.</para>
     </section>
     <section>
-      <title>2. Pipelining between and across stylesheets</title>
+      <title>2. Pipelining between and across XSLT stylesheets</title>
       <para>An aspect of pipelining that is fully under the control of the XSLT developer is
         pipelining between or across XSLT stylesheets. A complex transformation might be broken down
         into simpler stages, where each stage is implemented in a separate XSLT stylesheet, and
@@ -285,9 +285,9 @@
         because history imposes a real chronological order, but a similar model that uses similar
         terminology may also describe other linguistic phenomena, including the synchronic
         derivation of surface forms from more abstract underlying forms. In the present instance, we
-        employ it to describe, as a pipeline of individual rules, the transformation of standard
-        Russian orthography (which is not phonetic) to a phonetic representation that can serve as
-        the basis for identifying rhyme in verse.</para>
+        employ this framework to describe, as a pipeline of individual rules, the transformation of
+        standard Russian orthography (which is not phonetic) to a phonetic representation that can
+        serve as the basis for identifying rhyme in verse.</para>
     </section>
   </section>
   <section>
@@ -326,7 +326,12 @@
       <para>to one without:</para>
       <programlisting>&lt;rect x={position() * $xScale} y="-{. * $yScale}" width="{$width}" height="{. * $yScale}"/></programlisting>
       <para>The more complex the calculation, the more the legibility is improved by the creation of
-        convenience variables.</para>
+        convenience variables.<footnote>
+          <para>In this case, the reuse of the same value in the <code>@y</code> and
+              <code>@height</code> attributes means that the variable is not merely a matter of
+            convenience, since that reuse also means that the same expression does not have to be
+            evaluated more than once.</para>
+        </footnote></para>
       <para>Convenience variables may play a role in pipelining when the result of one function is
         passed to another. For example,</para>
       <programlisting>&lt;xsl:value-of select="func2(funct1($x))"/&gt;</programlisting>
