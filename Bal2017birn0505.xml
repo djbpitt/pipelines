@@ -222,20 +222,19 @@
         implementation and maintenance.</para>
       <para>The application that motivated this exploration is connected to our use of XML
         technologies to identify and analyze meter and rhyme in Russian verse. We presented a report
-        on the identification of meter at Balisage 2015(<xref linkend="birnbaum_2015"/>), and in
-        order to identify rhyme we needed to convert normal Russian orthography to a phonetic
+        on the identification of meter at Balisage 2015 (<xref linkend="birnbaum_2015"/>), and in
+        order also to identify rhyme we need to convert normal Russian orthography to a phonetic
         representation. As long as the place of stress is known (and that information was provided
         as part of the analysis of meter), the phonetic conversion turns out to be easier in Russian
         than in English because Russian orthography, although not phonetic, is closer to the
         phonetics of the language than is the case with English.</para>
-      <para>It is common in linguistic analysis to describe language processes in terms of the
-        application of ordered rules as a pipeline that accepts an underlying or base form as
-        initial input and generates transformed output. This conceptualization is used to model both
-        language change over time (ADD CITE) and the generation of surface phonetic forms from
-        underlying, abstract morphophonemic or phonological bases (ADD CITE). Order constraints are
-        traditionally described using alimentary and sanguinary metaphors, and they are based on the
-        linguistic reality that sound change may happen at a certain point in history and then cease
-        to operate, that is, cease to be a productive process:</para>
+      <para>It is common in historical linguistics to describe language change in terms of the
+        application of ordered rules as a pipeline that accepts an initial form as input, pipes it
+        through a sequence of individual sound-change rules, and generates transformed output.
+        Constraints on the order in which rules apply are traditionally described using alimentary
+        and sanguinary metaphors, and they are based on the linguistic reality that sound change may
+        happen at a certain point in history and then cease to operate, that is, cease to be a
+        productive process:</para>
       <itemizedlist>
         <listitem>
           <para><emphasis role="bold">Feeding order.</emphasis> The output of one rule creates new
@@ -260,7 +259,7 @@
               role="ital">y → z</emphasis> and in Rule B <emphasis role="ital">x → y</emphasis>, the
             two stand in a counter-feeding relationship, since Rule B creates what would have been
             new input into Rule A, but fails to do so because Rule A operates first, and is no
-            longer active when the potential new input is created.</para>
+            longer active when the potential new input is created by Rule B.</para>
         </listitem>
         <listitem>
           <para><emphasis role="bold">Counter-bleeding order.</emphasis> The output of one rule does
@@ -275,16 +274,17 @@
       <para>Note that feeding and bleeding are not opposites, and that some rules may not be
         critically ordered with respect to others because their input and output does not intersect
         with the input and output of other rules. These types of relationships among rules are
-        important because of their role in directing linguistic change (see, for example, <xref
-          linkend="kiparsky_1973"/>). They also provide a vocabulary for discussing the interaction
-        of XPath functions and XSLT templates when those are used to implement transformations that
-        model linguistic processes. Feeding, bleeding, and their opposites are important in modeling
-        historical language change because history imposes its own order, a similar model, described
-        in similar terms, may be used to describe other linguistic phenomena, including the
-        synchronic derivation of surface forms from more abstract underlying forms. In the present
-        instance, we employ it to describe, as a pipeline of individual rules, the transformation of
-        standard Russian orthography (which is not phonetic) to a phonetic representation that can
-        serve as the basis for identifying rhyme in verse.</para>
+        important because of their role in directing or constraining linguistic change (see, for
+        example, <xref linkend="kiparsky_1973"/>). In the context of the present report, they also
+        provide a vocabulary for discussing the interaction of XPath functions and XSLT templates
+        when those are used to implement transformations that model linguistic processes. Feeding,
+        bleeding, and their opposites are appropriate for modeling historical language change
+        because history imposes a real chronological order, but a similar model that uses similar
+        terminology may be used to describe other linguistic phenomena, including the synchronic
+        derivation of surface forms from more abstract underlying forms. In the present instance, we
+        employ it to describe, as a pipeline of individual rules, the transformation of standard
+        Russian orthography (which is not phonetic) to a phonetic representation that can serve as
+        the basis for identifying rhyme in verse.</para>
     </section>
   </section>
   <section>
