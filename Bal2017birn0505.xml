@@ -179,29 +179,137 @@
     </section>
     <section>
       <title>2. Pipelining between and across stylesheets</title>
-      <para>Stuff goes here</para>
+      <para>An aspect of pipelining that is fully under the control of the XSLT developer is
+        pipelining between or across XSLT stylesheets. A complex transformation might be broken down
+        into simpler stages, where each stage is implemented in a separate XSLT stylesheet, and
+        interim results are written to disk by one process and then read from disk by another. This
+        strategy may make the individual stylesheets easier to read because each may implement only
+        a small and coherent aspect of the overall transformation, and it also makes it easy to
+        examine the intermediate output during development, and to develop each step of the pipeline
+        without distraction by what precedes or follows. But disk I/O is much slower than in-memory
+        access, and the cost of writing the intermediate files is likely to compromise severely the
+        efficiency of the transformation. Whether that matters it likely to depend on the volume of
+        data; augmenting the execution time by an order of magnitude may not matter to the developer
+        if the overall time is still subjectively brief.</para>
+      <para>The overhead of disk I/O can be avoided by using pipelining utilities, whether general
+        purpose (such as Apache Cocoon<xref linkend="cocoon"/>) or XML specific (XProc<xref
+          linkend="XProc"/>). Pipelining tools avoid the overhead of disk I/O, although whether they
+        build complete intermediate in-memory structures or decompose (and perhaps parallelize) the
+        transformation in a functional manner is implementation-specific. XProc has been the subject
+        of six presentations by six different authors or teams of authors at Balisage alone (see
+          <link>https://www.balisage.net/Proceedings/topics/XProc.html</link>), and Cocoon has also
+        made several appearances, including as part of the toolkit used to produce the Balisage
+        proceedings (<link>https://www.balisage.net/Proceedings/vol17/acknowledgements.html</link>).
+        Pipelining between or across XSLT stylesheets with technologies like Cocoon or XProc does
+        not prohibit writing intermediate output to disk for examination during debugging, but it
+        does not require it, and XProc in particular incorporates additional features that may be
+        useful in complex transformations of XML documents (see
+          <link>https://www.w3.org/TR/xproc/#pipeline-concepts</link>). The focus of the current
+        report is on micropipelining, that is, on pipelines implemented within a single XSLT
+        stylesheet, and we will not explore XProc or other technologies for pipelining between or
+        across stylesheets, except to note that whether to implement a pipeline within a single
+        stylesheets or between or across stylesheets is a separate consideration that is beyond the
+        scope of the present report.</para>
     </section>
     <section>
       <title>3. Micropipelining: pipelining with a single XSLT stylesheet</title>
-      <para>Stuff goes here</para>
+      <para>We use the term <emphasis role="bold">micropipelining</emphasis> to refer to pipelining
+        within a single XSLT stylesheet. Micropipelines implemented within a single stylesheet can
+        always be refactored and spread across multiple stylesheets, but in situations where the
+        steps are conceptually part of what a human would consider a single operation, and where
+        intermediate stages are unlikely to be important except for debugging purposes, combining
+        them within a single XSLT stylesheet that performs that single operation may make for easier
+        implementation and maintenance.</para>
+      <para>The application that motivated this exploration is connected to our use of XML
+        technologies to identify and analyze meter and rhyme in Russian verse. We presented a report
+        on the identification of meter at Balisage 2015(<xref linkend="birnbaum_2015"/>), and in
+        order to identify rhyme we needed to convert normal Russian orthography to a phonetic
+        representation. As long as the place of stress is known (and that information was provided
+        as part of the analysis of meter), the phonetic conversion turns out to be easier in Russian
+        than in English because Russian orthography, although not phonetic, is closer to the
+        phonetics of the language than is the case with English.</para>
+      <para>It is common in linguistic analysis to describe language processes in terms of the
+        application of ordered rules as a pipeline that accepts an underlying or base form as
+        initial input and generates transformed output. This conceptualization is used to model both
+        language change over time (ADD CITE) and the generation of surface phonetic forms from
+        underlying, abstract morphophonemic or phonological bases (ADD CITE). Order constraints are
+        traditionally described using alimentary and sanguinary metaphors, and they are based on the
+        linguistic reality that sound change may happen at a certain point in history and then cease
+        to operate, that is, cease to be a productive process:</para>
+      <itemizedlist>
+        <listitem>
+          <para><emphasis role="bold">Feeding order.</emphasis> The output of one rule creates new
+            input for another rule. For example, if in Rule A <emphasis role="ital">x → y</emphasis>
+            (read as <emphasis role="ital">x</emphasis> is transformed into <emphasis role="ital"
+              >y</emphasis>) and in Rule B <emphasis role="ital">y → z</emphasis>, Rule A feeds Rule
+            B by creating new input for it.</para>
+        </listitem>
+        <listitem>
+          <para><emphasis role="bold">Bleeding order.</emphasis> The output of one rule modifies a
+            form that would otherwise have served as input for another rule. For example, if in Rule
+            A <emphasis role="ital">z → q</emphasis> and in Rule B <emphasis role="ital">x → y / _
+              z</emphasis> (read as <emphasis role="ital">x</emphasis> is transformed into <emphasis
+              role="ital">y</emphasis> when it precedes <emphasis role="ital">z</emphasis>), Rule A
+            is said to bleed Rule B because it reduces the application of Rule B by the destroying
+            the environment it requires.</para>
+        </listitem>
+        <listitem>
+          <para><emphasis role="bold">Counter-feeding order.</emphasis> The output of one rule does
+            not create new input for another rule, but were the order of the two rules reversed,
+            they would observe a feeding relationship. For example, if in Rule A <emphasis
+              role="ital">y → z</emphasis> and in Rule B <emphasis role="ital">x → y</emphasis>, the
+            two stand in a counter-feeding relationship, since Rule B creates what would have been
+            new input into Rule A, but fails to do so because Rule A operates first, and is no
+            longer active when the potential new input is created.</para>
+        </listitem>
+        <listitem>
+          <para><emphasis role="bold">Counter-bleeding order.</emphasis> The output of one rule does
+            not bleed forms that might otherwise have served as input for another rule, but were the
+            order of the two rules reversed, they would observe a bleeding relationship. For
+            example, if in Rule A <emphasis role="ital">x → y / _ z</emphasis> and in Rule B
+              <emphasis role="ital">z → q</emphasis>, the rules observe a counter-bleeding order
+            because were the order reversed, Rule B would reduce the applicability of Rule A by
+            destroying the context it requires.</para>
+        </listitem>
+      </itemizedlist>
+      <para>Note that feeding and bleeding are not opposites, and that some rules may not be
+        critically ordered with respect to others because their input and output does not intersect
+        with the input and output of other rules. These types of relationships among rules are
+        important because of their role in directing linguistic change (see, for example, <xref
+          linkend="kiparsky_1973"/>). They also provide a vocabulary for discussing the interaction
+        of XPath functions and XSLT templates when those are used to implement transformations that
+        model linguistic processes. Feeding, bleeding, and their opposites are important in modeling
+        historical language change because history imposes its own order, a similar model, described
+        in similar terms, may be used to describe other linguistic phenomena, including the
+        synchronic derivation of surface forms from more abstract underlying forms. In the present
+        instance, we employ it to describe, as a pipeline of individual rules, the transformation of
+        standard Russian orthography (which is not phonetic) to a phonetic representation that can
+        serve as the basis for identifying rhyme in verse.</para>
     </section>
   </section>
   <section>
-    <title>Nested functions</title>
-    <para>Stuff about nested functions</para>
-  </section>
-  <section>
-    <title>Calling templates</title>
-    <para>Stuff about calling templates</para>
-  </section>
-  <section>
-    <title>The visitor pattern</title>
-    <para>Stuff about the visitor pattern</para>
-  </section>
-  <section>
-    <title>nested calls to the replace() functions</title>
-    <para>Stuff about character-set conversion using table-driven sibling recursion with
-      replace()</para>
+    <title>Micropipelining: a closer look</title>
+    <section>
+      <title>Convenience variables</title>
+      <para>Stuff about convenience variables</para>
+    </section>
+    <section>
+      <title>Nested functions</title>
+      <para>Stuff about nested functions, Chaining. Map. With and without variables.</para>
+    </section>
+    <section>
+      <title>Calling templates</title>
+      <para>Stuff about calling templates</para>
+    </section>
+    <section>
+      <title>The visitor pattern</title>
+      <para>Stuff about the visitor pattern</para>
+    </section>
+    <section>
+      <title>nested calls to the replace() functions</title>
+      <para>Stuff about character-set conversion using table-driven sibling recursion with
+        replace()</para>
+    </section>
   </section>
   <section>
     <title>Conclusion</title>
@@ -266,6 +374,15 @@
   <!-- Kay 2009: "Performance problems arise when components with different polarity are mixed within the same pipeline." -->
   <bibliography>
     <title>Works cited</title>
+    <bibliomixed xml:id="cocoon" xreflabel="Cocoon">Apache Cocoon.
+        <link>http://cocoon.apache.org/</link></bibliomixed>
+    <bibliomixed xml:id="birnbaum_2015" xreflabel="Birnbaum 2015">Birnbaum, David J., and Elise
+      Thorsen. <quote>Markup and meter: Using XML tools to teach a computer to think about
+        versification.</quote> Presented at Balisage: The Markup Conference 2015, Washington, DC,
+      August 11 - 14, 2015. In <emphasis role="ital">Proceedings of Balisage: The Markup Conference
+        2015.</emphasis> Balisage Series on Markup Technologies, vol. 15 (2015). DOI:
+      10.4242/BalisageVol15.Birnbaum01.
+        <link>https://www.balisage.net/Proceedings/vol15/html/Birnbaum01/BalisageVol15-Birnbaum01.html</link></bibliomixed>
     <bibliomixed xml:id="fuller_2016" xreflabel="Fuller 2016">Fuller, James. <quote>A catalog of
         functional programming idioms in XQuery 3.1.</quote> Presented at <emphasis role="ital"
         >Balisage: The Markup Conference 2016, Washington, DC, August 2 - 5, 2016.</emphasis> In
@@ -281,6 +398,9 @@
         >Proceedings of Balisage: The Markup Conference 2009. Balisage series on markup
         technologies, vol. 3 (2009). DOI: 10.4242/BalisageVol3.Kay01.</emphasis>
       <link>https://www.balisage.net/Proceedings/vol3/html/Kay01/BalisageVol3-Kay01.html</link></bibliomixed>
+    <bibliomixed xml:id="kiparsky_1973" xreflabel="Kiparsky 1973">Kiparsky, Paul. Abstractness,
+      opacity, and global rules. In , O. Fujimura, ed, <emphasis role="ital">Three dimensions of
+        linguistic theory</emphasis>, pages 57–86. Tokyo: TEC, 1973.</bibliomixed>
     <bibliomixed xml:id="knuth_1974" xreflabel="Knuth 1974">Kunth, Donald E. <quote>Structured
         programming with <code>go to</code> statements</quote>, Computing surveys 6(4): 261–301.
         <link>http://web.archive.org/web/20130731202547/http://pplab.snu.ac.kr/courses/adv_pl05/papers/p261-knuth.pdf</link></bibliomixed>
@@ -298,5 +418,7 @@
         2016. Balisage series on markup technologies</emphasis>, vol. 17 (2016). DOI:
       10.4242/BalisageVol17.Piez01.
         <link>https://www.balisage.net/Proceedings/vol17/html/Piez01/BalisageVol17-Piez01.html</link></bibliomixed>
+    <bibliomixed xml:id="XProc" xreflabel="Xproc">XProc: An XML Pipeline Language.
+        <link>https://xproc.org/</link></bibliomixed>
   </bibliography>
 </article>
