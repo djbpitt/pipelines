@@ -212,7 +212,7 @@
         scope of the present report.</para>
     </section>
     <section>
-      <title>3. Micropipelining: pipelining with a single XSLT stylesheet</title>
+      <title>3. Micropipelining: pipelining within a single XSLT stylesheet</title>
       <para>We use the term <emphasis role="bold">micropipelining</emphasis> to refer to pipelining
         within a single XSLT stylesheet. Micropipelines implemented within a single stylesheet can
         always be refactored and spread across multiple stylesheets, but in situations where the
