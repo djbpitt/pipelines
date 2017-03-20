@@ -293,11 +293,55 @@
     <title>Micropipelining: a closer look</title>
     <section>
       <title>Convenience variables</title>
-      <para>Stuff about convenience variables</para>
+      <para>As the name implies, <emphasis role="bold">convenience variables</emphasis> are
+        variables created for the benefit of the programmer, and not because they necessarily
+        improve the efficiency or operation of the program. Convenience variables typically improve
+        the legibility of the code, which makes it easier to develop (one process at a time) and
+        maintain.</para>
+      <para>Variables that improve the efficiency of the transformation are not convenience
+        variables (although they may also be convenient). For example, if we need to calculate the
+        same result more than once in an XSLT stylesheet, performing the calculation only once and
+        saving it in a variable that we can then reuse may reduce the amount of computation and
+        improve the performance of the transformation. On the other hand, when we calculate a value
+        that we will use only once, save it in a variable, and then use the variable, we risk
+        reducing the efficiency of the transformation by imposing the overhead needed to create an
+        intermediate structure. Within XSLT, this is especially the case when variables are declared
+        without explicit typing using the <code>@as</code> attribute, which results in the expensive
+        creation of a temporary in-memory document to hold the value.<footnote>
+          <para><quote>If a sequence constructor is used with no <code>as</code> attribute, a
+              temporary document is constructed. This is done by creating a new document node and
+              using the value of the result sequence to form the children of the document
+              node.</quote> (<xref linkend="kay_2008"/>, p. 503). There are times when constructing
+            a temporary tree is nonetheless appropriate; for an example, see <xref
+              linkend="kay_2008"/>, p. 510ff.</para>
+        </footnote></para>
+      <para>As an example of a convenience variable, consider an XSLT transformation to SVG where we
+        need to calculate the <code>@x</code> and <code>@y</code> coordinates of an object and then
+        plot it. If those calculations are complex, packing them into the declaration of the object
+        may compromise its transparency. Compare the version with convenience variables:</para>
+      <programlisting>&lt;xsl:variable name="xPos" as="xs:double" select="position() * $xScale"/&gt;
+&lt;xsl:variable name="yPos" as="xs:double" select=". * $yScale"/&gt;
+&lt;rect x={$xPos} y="-{$yPos}" width="{$width}" height="{$yPos}"/></programlisting>
+      <para>to one without:</para>
+      <programlisting>&lt;rect x={position() * $xScale} y="-{. * $yScale}" width="{$width}" height="{. * $yScale}"/></programlisting>
+      <para>The more complex the calculation, the more the legibility is improved by the creation of
+        convenience variables.</para>
+      <para>Convenience variables may play a role in pipelining when the result of one function is
+        passed to another. For example, <code>&lt;xsl:value-of
+          select="func2(funct1($x))"/&gt;</code> may be rewritten as:</para>
+      <programlisting>&lt;xsl:variable name="y" select="func1($x)"/&gt;
+&lt;xsl:value-of select="func2($y)"&gt;</programlisting>
+      <para>Nested functions and the use of convenience variables to un-nest them are discussed in
+        greater detail below, but the distinction between convenience variables and those that
+        contribute to the quality of the code in ways that are not limited to human legibility is
+        important because the costs and benefits of creating variables to hold intermediate values
+        must be evaluated differently depending on whether using the variable convey advantages
+        beyond convenience, that is, beyond the legibility that supports ease of maintenance.</para>
     </section>
     <section>
       <title>Nested functions</title>
-      <para>Stuff about nested functions, Chaining. Map. With and without variables.</para>
+      <para>Lisp (LISt Processor), Lots of Irritating Silly Parentheses and others . Stuff about
+        nested functions, Chaining. Map. With and without variables.</para>
     </section>
     <section>
       <title>Calling templates</title>
@@ -394,6 +438,9 @@
     <bibliomixed xml:id="gamma_1994" xreflabel="Gamma 1994">Gamma, Erich, Richard Helm, Ralph
       Johnson, and John Vlissides. <quote>Design patterns: elements of reusable object-oriented
         software.</quote> Boston, MA: Addison-Wesley, 1994.</bibliomixed>
+    <bibliomixed xml:id="kay_2008" xreflabel="Kay 2008">Kay, Michael, <emphasis role="ital">XSLT 2.0
+        and XPath 2.0 programmer’s reference</emphasis>, 4th edition, Indianapolis: Wiley/Wrox,
+      2008.</bibliomixed>
     <bibliomixed xml:id="kay_2009" xreflabel="Kay 2009">Kay, Michael. <quote>You pull, I’ll push: on
         the polarity of pipelines.</quote> Presented at <emphasis role="ital">Balisage: The Markup
         Conference 2009, Montréal, Canada, August 11 - 14, 2009.</emphasis> In <emphasis role="ital"
