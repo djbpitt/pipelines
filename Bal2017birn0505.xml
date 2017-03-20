@@ -55,12 +55,13 @@
         <code>normalize-space()</code> function, which collapses the two consecutive space
       characters into one. Or we can apply the functions in the opposite order. In this example and
       many other pipelines, the order in which the functions are applied does not affect the result;
-      for a situation where it does, see the discussion of character-set conversion, below.</para>
-    <para>Pipes and pipelines trace their origin as a dominant process-control architecture to a
-      typed note by Doug McIlroy in 1964, a summary of <quote>what’s most important</quote> that
-      says that <quote>We should have some ways of coupling programs like garden hose—screw in
-        another segment when it becomes when it becomes necessary to massage data in another
-        way</quote>.<xref linkend="mcilroy_1964"/> In an XSLT and XQuery context:<blockquote>
+      for a situation where it does, see the discussion of feeding and bleeding orders,
+      below.</para>
+    <para>Pipes and pipelines trace their popularity as a process-control architecture to a 1964
+      typed note by Doug McIlroy about Unix. In a summary of <quote>what’s most important</quote>,
+      McIlroy writes that that <quote>[w]e should have some ways of coupling programs like garden
+        hose—screw in another segment when it becomes when it becomes necessary to massage data in
+        another way</quote>. (<xref linkend="mcilroy_1964"/>) In an XSLT and XQuery context:<blockquote>
         <para>Constructing an application in the form of a pipeline has many advantages, the main
           ones being (a) that the code of each step in the pipeline is kept very simple; (b) that it
           is very easy to assemble an application from a set of components, thus maximizing the
@@ -70,7 +71,7 @@
         <para>A number of products are available to assist with the development and management of
           pipeline-based applications, examples being Orbeon [Orbeon] and Apache Cocoon [Cocoon].
           More recently W3C has developed a standard language, XProc [W3C XProc], for the definition
-          of pipelines.<xref linkend="kay_2009"/></para>
+          of pipelines. (<xref linkend="kay_2009"/>)</para>
       </blockquote></para>
     <para>Beyond using the output of one process as input to the next, pipelining affords
       computational efficiency by making it possible to stream the flow of information, potentially
@@ -93,8 +94,8 @@
       patterns. The term <emphasis role="bold">antipattern</emphasis> was introduced by Andrew
       Koenig in 1995 to describe something that looks like a paradigm for a solution to a common
       type of problem, that is, a pattern, but that for structural reasons leads to results that do
-      not live up to <quote>best practice</quote> expectations.<xref linkend="koenig_1995"/> As used
-      in this report, the distinction between patterns and antipatterns helps us focus on the
+      not live up to <quote>best practice</quote> expectations. (<xref linkend="koenig_1995"/>) As
+      used in this report, the distinction between patterns and antipatterns helps us focus on the
       strengths and weaknesses of alternative strategies for pipelining within XSLT.</para>
     <para>It is often said that code is read more often than it is written, and from that
       perspective, legibility, which contributes to ease of maintenance, is one feature that can
@@ -107,8 +108,8 @@
               actually have a strong negative impact when debugging and maintenance are considered.
               We <emphasis role="ital">should</emphasis> forget about small efficiencies, say about
               97% of the time: premature optimization is the root of all evil.</para>
-            <para>Yet we should not pass up our opportunities in that critical 3%.<xref
-                linkend="knuth_1974"/> (268; see also the larger context on that page)</para>
+            <para>Yet we should not pass up our opportunities in that critical 3%. (<xref
+                linkend="knuth_1974"/>, p. 268; see also the larger context on that page)</para>
           </blockquote></para>
       </footnote> And <xref linkend="kay_2009"/>, in a discussion of Jackson Structured Programming,
       writes that <quote>[t]he essential principle of JSP was the idea that the structure of the
@@ -160,7 +161,7 @@
             this rule is that XSLT is rather purist about being a strictly functional language, and
             in a strictly functional language, calling the same function twice with the same
             arguments always returns the same result. This property makes life much simpler for
-              optimizers.<xref linkend="kay_2009"/> (738)</para>
+            optimizers. (<xref linkend="kay_2009"/>, p. 738)</para>
         </blockquote></para>
       <para>This fact of XSLT implementation means that although the XSLT developer might write code
         that is amenable to pipelined execution, whether the pipeline is executed efficient is at
@@ -172,7 +173,7 @@
             (the consumer calls the supplier when data is required), or by components with push
             polarity (the supplier calls the consumer when data is available). <emphasis role="ital"
               >Performance problems arise when components with different polarity are mixed within
-              the same pipeline.</emphasis><xref linkend="kay_2009"/> (emphasis added)</para>
+              the same pipeline.</emphasis> (<xref linkend="kay_2009"/>, emphasis added)</para>
         </blockquote></para>
       <para>any aspect of the polarity that is determined within the XSLT processor, rather than
         within the XSLT code, is at least partially outside the control of the XSLT developer. In
@@ -194,13 +195,13 @@
         data; augmenting the execution time by an order of magnitude may not matter to the developer
         if the overall time is still subjectively brief.</para>
       <para>The overhead of disk I/O can be avoided by using pipelining utilities, whether general
-        purpose (such as Apache Cocoon<xref linkend="cocoon"/>) or XML specific (XProc<xref
-          linkend="XProc"/>). Pipelining tools avoid the overhead of disk I/O, although whether they
-        build complete intermediate in-memory structures or decompose (and perhaps parallelize) the
-        transformation in a functional manner is implementation-specific. XProc has been the subject
-        of six presentations by six different authors or teams of authors at Balisage alone (see
-          <link>https://www.balisage.net/Proceedings/topics/XProc.html</link>), and Cocoon has also
-        made several appearances, including as part of the toolkit used to produce the Balisage
+        purpose (such as Apache Cocoon [<xref linkend="cocoon"/>]) or XML specific (XProc [<xref
+          linkend="XProc"/>]). Pipelining tools avoid the overhead of disk I/O, although whether
+        they build complete intermediate in-memory structures or decompose (and perhaps parallelize)
+        the transformation in a functional manner is implementation-specific. XProc has been the
+        subject of six presentations by six different authors or teams of authors at Balisage alone
+        (see <link>https://www.balisage.net/Proceedings/topics/XProc.html</link>), and Cocoon has
+        also made several appearances, including as part of the toolkit used to produce the Balisage
         proceedings (<link>https://www.balisage.net/Proceedings/vol17/acknowledgements.html</link>).
         Pipelining between or across XSLT stylesheets with technologies like Cocoon or XProc does
         not prohibit writing intermediate output to disk for examination during debugging, but it
