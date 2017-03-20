@@ -112,12 +112,14 @@
           </blockquote></para>
       </footnote> And <xref linkend="kay_2009"/>, in a discussion of Jackson Structured Programming,
       writes that <quote>[t]he essential principle of JSP was the idea that the structure of the
-        program should mirror the structure of the data</quote>, continuing that this JSP can
-      contribute to both code legibility and maintenance, on the one hand, and operational
-      efficiency, on the other: <quote>the user achieves the benefits that come from writing the
-        application as a controlling application (maintainability, readability, reusability)
-        combining these with the improvements in system performance that come from using a
-        push-based control model.</quote></para>
+        program should mirror the structure of the data</quote>, continuing that JSP can contribute
+      to both code legibility and maintenance, on the one hand, and operational efficiency, on the
+      other: </para>
+    <blockquote>
+      <para>[T]he user achieves the benefits that come from writing the application as a controlling
+        application (maintainability, readability, reusability) combining these with the
+        improvements in system performance that come from using a push-based control model.</para>
+    </blockquote>
     <para>The boundary between a pattern and an antipattern is not always unambiguous. Some
       programming strategies discussed below are easy to write and read in simple situations, but
       may scale poorly as the complexity of the context increases. Such models might be sensible
