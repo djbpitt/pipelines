@@ -101,7 +101,7 @@
       distinguish patterns from antipatterns. Another is computational complexity, and in that sense
       scalability is another such feature (but see immediately below).<footnote>
         <para>Donald Knuth’s oft-cited statement that <quote>premature optimization is the root of
-            all evil</quote> does not blanketly disparage optimization. The full sentence reads: <blockquote>
+            all evil</quote> does not blanketly disparage optimization. In narrow context it reads: <blockquote>
             <para>Programmers waste enormous amounts of time thinking about, or worrying about, the
               speed of noncritical parts of their programs, and these attempts at efficiency
               actually have a strong negative impact when debugging and maintenance are considered.
