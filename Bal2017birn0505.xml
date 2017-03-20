@@ -122,13 +122,13 @@
         improvements in system performance that come from using a push-based control model.</para>
     </blockquote>
     <para>The boundary between a pattern and an antipattern is not always unambiguous. Some
-      programming strategies discussed below are easy to write and read in simple situations, but
-      may scale poorly as the complexity of the context increases. Such models might be sensible
-      patterns in those simpler situations, while transforming themselves gradually into
-      antipatterns as the context becomes more complex. Scalability may be a useful feature in a
-      pattern, but the strategy that is best at a high degree of contextual complexity is not
-      necessarily best in simpler situations. For that reason, the discussion below avoids labeling
-      specific solutions globally as pattern or antipattern, and instead discusses both the
+      programming strategies discussed below, such as nested functions, are easy to write and read
+      in simple situations, but may scale poorly as the complexity of the context increases. Such
+      models might be sensible patterns in those simpler situations, while transforming themselves
+      gradually into antipatterns as the context becomes more complex. Scalability may be a useful
+      feature in a pattern, but the strategy that is best at a high degree of contextual complexity
+      is not necessarily best in simpler situations. For that reason, the discussion below avoids
+      labeling specific solutions globally as pattern or antipattern, and instead discusses both the
       strengths and weaknesses of each, with attention to the programming context.</para>
   </section>
   <section>
@@ -166,7 +166,7 @@
       <para>This fact of XSLT implementation means that although the XSLT developer might write code
         that is amenable to pipelined execution, whether the pipeline is executed efficient is at
         least partially dependent on processor-internal code to which the XSLT developer has no
-        direct access. When Michael Kay’s alliteratively titled <quote>You pull, I’ll push: on the
+        direct access. Michael Kay’s alliteratively titled <quote>You pull, I’ll push: on the
           polarity of pipelines</quote>, cited above, continues that:<blockquote>
           <para>For performance, the stages of a pipeline should communicate by means of streams of
             events. Traditionally, this can be done either by writing components with pull polarity
@@ -175,10 +175,10 @@
               >Performance problems arise when components with different polarity are mixed within
               the same pipeline.</emphasis> (<xref linkend="kay_2009"/>, emphasis added)</para>
         </blockquote></para>
-      <para>any aspect of the polarity that is determined within the XSLT processor, rather than
-        within the XSLT code, is at least partially outside the control of the XSLT developer. In
-        this XSLT-developer-focused report, pipelining within the XSLT processor will not be
-        discussed further.</para>
+      <para>However, any aspect of the polarity that is determined within the XSLT processor, rather
+        than within the XSLT code, is at least partially outside the control of the XSLT developer.
+        For that reason, in this XSLT-developer-focused report, pipelining within the XSLT processor
+        will not be discussed further.</para>
     </section>
     <section>
       <title>2. Pipelining between and across stylesheets</title>
@@ -283,7 +283,7 @@
         when those are used to implement transformations that model linguistic processes. Feeding,
         bleeding, and their opposites are appropriate for modeling historical language change
         because history imposes a real chronological order, but a similar model that uses similar
-        terminology may be used to describe other linguistic phenomena, including the synchronic
+        terminology may also describe other linguistic phenomena, including the synchronic
         derivation of surface forms from more abstract underlying forms. In the present instance, we
         employ it to describe, as a pipeline of individual rules, the transformation of standard
         Russian orthography (which is not phonetic) to a phonetic representation that can serve as
@@ -296,9 +296,9 @@
       <title>Convenience variables</title>
       <para>As the name implies, <emphasis role="bold">convenience variables</emphasis> are
         variables created for the benefit of the programmer, and not because they necessarily
-        improve the efficiency or operation of the program. Convenience variables typically improve
-        the legibility of the code, which makes it easier to develop (one process at a time) and
-        maintain.</para>
+        improve the efficiency or operation of the program. The purpose of convenience variables is
+        typically that they improve the legibility of the code, which makes it easier to develop
+        (one process at a time) and maintain.</para>
       <para>Variables that improve the efficiency of the transformation are not convenience
         variables (although they may also be convenient). For example, if we need to calculate the
         same result more than once in an XSLT stylesheet, performing the calculation only once and
@@ -334,7 +334,7 @@
       <programlisting>&lt;xsl:variable name="y" select="func1($x)"/&gt;
 &lt;xsl:value-of select="func2($y)"&gt;</programlisting>
       <para>Nested functions vs the use of convenience variables to un-nest them is discussed in
-        greater detail below, but the distinction between convenience variables and those that
+        greater detail below. The distinction between convenience variables and those that
         contribute to the quality of the code in ways that are not limited to human legibility is
         important because the costs and benefits of creating variables to hold intermediate values
         must be evaluated differently depending on whether using the variable convey advantages
