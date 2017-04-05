@@ -60,16 +60,16 @@
       constructed at higher levels. For example, an XSLT transformation might be designed as a
       pipeline of XSLT stylesheets, where the original input XML is passed into a transformation
       that uses one stylesheet and creates output XML, which becomes the input XML for another
-      stylesheet, etc., until eventually the desired final output is created. <emphasis role="bold"
-        >Micropipelining</emphasis> is not well established as a technical term, and we use it in
-      this report to refer to pipelines that operate entirely within a single XSLT stylesheet,
-      whether at the level of individual functions or in some of the more complex ways described
-      below.</para>
+      stylesheet, etc., until eventually the desired final output is created. While <emphasis
+        role="bold">pipelining</emphasis> is well established as a technical term, <emphasis
+        role="bold">micropipelining</emphasis> is not, and we use the latter in this report to refer
+      to pipelines that operate entirely within a single XSLT stylesheet, whether at the level of
+      individual functions or in some of the more complex ways described below.</para>
     <para>Pipes and pipelines trace their popularity as a process-control architecture to a 1964
       typed note by Doug McIlroy about Unix. In a summary of <quote>what’s most important</quote>,
       McIlroy writes that that <quote>[w]e should have some ways of coupling programs like garden
-        hose—screw in another segment when it becomes when it becomes necessary to massage data in
-        another way</quote>. (<xref linkend="mcilroy_1964"/>) In an XSLT and XQuery context:<blockquote>
+        hose—screw in another segment when it becomes necessary to massage data in another
+        way</quote>. (<xref linkend="mcilroy_1964"/>) In an XSLT and XQuery context:<blockquote>
         <para>Constructing an application in the form of a pipeline has many advantages, the main
           ones being (a) that the code of each step in the pipeline is kept very simple; (b) that it
           is very easy to assemble an application from a set of components, thus maximizing the
@@ -86,11 +86,12 @@
       avoiding the overhead of building complete intermediate structures in memory or writing
       intermediate output of the first process to disk and then reading it from disk into the input
       of the next process. Whether an application takes advantage of this possibility depends on the
-      implementation, but although pipelining is similar in some respects to saving and reusing
-      intermediate results, in a functional environment that supports streaming and multiprocessing,
-      it has the potential of offering performance benefits by eschewing the creation of
-      intermediate storage objects in variables or in disk files and permitting data to be processed
-      as soon as it and a processing core become available.</para>
+      implementation, but although pipelining is similar in some respects (especially pertaining to
+      the eventual final output) to saving and reusing intermediate results, in a functional
+      environment that supports streaming and multiprocessing, it also has the potential of offering
+      performance benefits by eschewing the creation of intermediate storage objects in variables or
+      in disk files and permitting data to be processed as soon as it and a processing core become
+      available.</para>
   </section>
   <section>
     <title>Patterns and antipatterns</title>
@@ -132,21 +133,23 @@
     <para>The boundary between a pattern and an antipattern is not always unambiguous. Some
       programming strategies discussed below, such as nested functions, are easy to write and read
       in simple situations (e.g., two functions, each of which takes one parameter), but may scale
-      poorly with respect to legibility or performance as the complexity of the context increases.
-      Such models might therefore be sensible patterns when applied in those simpler situations,
-      while transforming themselves gradually into antipatterns as the complexity of the context
+      poorly with respect to legibility as the complexity of the context increases. Such models
+      might therefore be sensible patterns when applied in those simpler situations, while
+      transforming themselves gradually into antipatterns as the complexity of the context
       increases. Scalability may be a useful feature in a pattern, but the strategy that is best at
       a high degree of contextual complexity is not necessarily optimal in simpler situations. For
       that reason, the discussion below avoids labeling specific solutions globally as pattern or
       antipattern, and instead discusses both the strengths and weaknesses of each approach, with
-      attention to the programming context.</para>
+      attention to the programming context. We thus use pattern and antipattern as a framework for
+      evaluating the strengths and weaknesses of coding strategies, rather than as a taxonomy for
+      classifying them in a binary fashion.</para>
   </section>
   <section>
     <title>Micropipelining in context</title>
     <para>Pipelining may play a role in XSLT development at at least three levels: 1) internally,
       within the XSLT processor; 2) between or across stylesheets; and 3) within a single
-      stylesheet. We describe these below by way of providing an overview; the remainder of this
-      report then concentrates on only the last of the three, on pipelining within a single XSLT
+      stylesheet. We describe these below by way of providing a broad context and overview, but the
+      focus of this report is on only the last of the three, on pipelining within a single XSLT
       stylesheet, which we call micropipelining.</para>
     <section>
       <title>1. Pipelining within the XSLT processor</title>
@@ -192,26 +195,27 @@
     </section>
     <section>
       <title>2. Pipelining between and across XSLT stylesheets</title>
-      <para>An aspect of pipelining that is fully under the control of the XSLT developer is
+      <para>An aspect of pipelining that is much more under the control of the XSLT developer is
         pipelining between or across XSLT stylesheets. A complex transformation might be broken down
         into simpler stages, where each stage is implemented in a separate XSLT stylesheet, and
         interim results are written to disk by one process and then read from disk by another. This
         strategy may make the individual stylesheets easier to read because each may implement only
-        a small and coherent aspect of the overall transformation, and it also makes it easy to
-        examine the intermediate output during development, and to develop each step of the pipeline
-        without distraction by what precedes or follows. But disk I/O is much slower than in-memory
-        access, and the cost of writing the intermediate files is likely to compromise severely the
-        efficiency of the transformation. Whether that matters it likely to depend on the volume of
-        data; augmenting the execution time by an order of magnitude may not matter to the developer
-        if the overall time is still subjectively brief.</para>
+        a small and coherent aspect of the overall transformation. This approach also makes it easy
+        to examine the intermediate output during development, and to develop each step of the
+        pipeline without distraction by what precedes or follows. But disk I/O is much slower than
+        in-memory access, and the cost of writing the intermediate files is likely to compromise
+        severely the efficiency of the transformation. Whether that matters it likely to depend on
+        the volume of data; augmenting the execution time by an order of magnitude may not matter to
+        the developer if the overall time is still subjectively brief.</para>
       <para>The overhead of disk I/O can be avoided by using pipelining utilities, whether broader
-        purpose (such as Apache Cocoon [<xref linkend="cocoon"/>]) or XML specific (XProc [<xref
-          linkend="XProc"/>]). Pipelining tools avoid the overhead of disk I/O, although whether
-        they build complete intermediate in-memory structures or decompose (and perhaps parallelize)
-        the transformation in a functional manner is implementation-specific. XProc has been the
-        subject of six presentations by six different authors or teams of authors at Balisage alone
-        (see <link>https://www.balisage.net/Proceedings/topics/XProc.html</link>), and Cocoon has
-        also made several appearances, including as part of the toolkit used to produce the Balisage
+        purpose (such as Apache Cocoon [<xref linkend="cocoon"/>]) or more narrowly XML specific
+        (XProc [<xref linkend="XProc"/>]). Pipelining tools avoid the overhead of disk I/O, although
+        whether they build complete intermediate in-memory structures or decompose (and perhaps
+        parallelize or stream) the transformation in a functional manner is implementation-specific.
+        These technologies are well know to the Balisage audience: XProc has been the subject of six
+        presentations by six different authors or teams of authors at Balisage alone (see
+          <link>https://www.balisage.net/Proceedings/topics/XProc.html</link>), and Cocoon has also
+        made several appearances, including as part of the toolkit used to produce the Balisage
         proceedings (<link>https://www.balisage.net/Proceedings/vol17/acknowledgements.html</link>).
         Pipelining between or across XSLT stylesheets with technologies like Cocoon or XProc does
         not prohibit writing intermediate output to disk for examination during debugging, but it
@@ -221,7 +225,7 @@
         report is on micropipelining, that is, on pipelines implemented within a single XSLT
         stylesheet, and we will not explore XProc or other technologies for pipelining between or
         across stylesheets, except to note that whether to implement a pipeline within a single
-        stylesheets or between or across stylesheets is a separate consideration that lies outside
+        stylesheet or between or across stylesheets is a separate consideration that lies outside
         the within-stylesheet scope of the present report.</para>
     </section>
     <section>
@@ -230,17 +234,23 @@
         single XSLT stylesheet. Micropipelines implemented within a single stylesheet can always be
         refactored and spread across multiple stylesheets, but in situations where the steps are
         conceptually part of what a human would consider a single operation, and where intermediate
-        stages are unlikely to be important except for debugging purposes, combining them within a
-        single XSLT stylesheet that performs that single operation may make for easier
-        implementation and maintenance.</para>
+        stages are unlikely to be of interest except for debugging purposes during development,
+        combining them within a single XSLT stylesheet that performs that single operation may make
+        for easier implementation and maintenance.</para>
       <para>The application that motivated this exploration is connected to our use of XML
         technologies to identify and analyze meter and rhyme in Russian verse. We presented a report
         on the identification of meter at Balisage 2015 (<xref linkend="birnbaum_2015"/>), and in
         order also to identify rhyme we need to convert normal Russian orthography to a phonetic
-        representation. As long as the place of stress is known (and that information was provided
-        as part of the analysis of meter), the phonetic conversion, although complex, turns out to
-        be easier in Russian than in English because Russian orthography, although not phonetic, is
-        closer to the phonetics of the language than is the case with English.</para>
+        representation. As long as the place of stress is known,<footnote>
+          <para>The place of stress in Russian, as in English, is not normally indicated
+            orthographically, and because stress can fall on different syllables in different words,
+            it is not predictable without lexical knowledge. The identification of meter depends on
+            knowing the place of stress, and <xref linkend="birnbaum_2015"/> describes how stress is
+            added automatically to augment unstressed input in natural Russian orthography before
+            performing metrical analysis.</para>
+        </footnote> the phonetic conversion, although complex, turns out to be easier in Russian
+        than in English because Russian orthography, although not phonetic, is closer to the
+        phonetics of the language than is the case with English.</para>
       <para>It is common in historical linguistics to describe language change in terms of the
         application of ordered rules as a pipeline that accepts an initial form as input, pipes it
         (that is, passes it along) through a sequence of individual sound-change rules, and
@@ -285,17 +295,18 @@
         </listitem>
       </itemizedlist>
       <para>Note that feeding and bleeding are not opposites, and that some rules may not be
-        critically ordered with respect to others because their input and output does not intersect
-        with the input and output of other rules. These types of relationships among rules are
-        important because of their role in directing or constraining linguistic change (see, for
-        example, <xref linkend="kiparsky_1973"/>). In the context of the present report, they also
-        provide a vocabulary for discussing the interaction of XPath functions and XSLT templates
-        when those are used to implement transformations that model linguistic processes. Feeding,
-        bleeding, and their opposites are appropriate for modeling historical language change
-        because history imposes a real chronological order, but a similar model that uses similar
-        terminology may also describe other linguistic phenomena, including the synchronic
-        derivation of surface forms from more abstract underlying forms. In the present instance, we
-        employ this framework to describe, as a pipeline of individual rules, the transformation of
+        critically ordered with respect to others because their input, output, and conditioning
+        environment do not intersect with the input, output, and conditioning environment of other
+        rules. These types of relationships among rules are important because of their role in
+        directing or constraining linguistic change (see, for example, <xref linkend="kiparsky_1973"
+        />). In the context of the present report, these relationships also provide a vocabulary for
+        discussing the interaction of XPath functions and XSLT templates when those are used to
+        implement transformations that model linguistic processes. Feeding, bleeding, and their
+        opposites are appropriate for modeling historical language change because history imposes a
+        real chronological order, but a similar model that uses similar terminology may also
+        describe other linguistic phenomena, including the synchronic derivation of surface forms
+        from more abstract underlying forms. In the present instance, we employ this framework to
+        describe, as a pipeline of individual rules, the XSLT implementation of a transformation of
         standard Russian orthography (which is not phonetic) to a phonetic representation that can
         serve as the basis for identifying rhyme in verse.</para>
     </section>
@@ -303,23 +314,35 @@
   <section>
     <title>Micropipelining: a closer look</title>
     <section>
+      <title>Background and context</title>
+      <para>When we began implementing in XSLT the machine-assisted identification and analysis of
+        Russian rhyme, we were aware that pipelining was required because our algorithm for
+        converting natural Russian orthography (enhanced by information about stress, which is not
+        part of natural Russian orthography) was conceptualized as a series of rules or insertion,
+        deletion, and replacement, the order of which was constrained by feeding and bleeding
+        relationships. What we missed was a tutorial about alternatives for implementing
+        micropipelines, which might guide us toward the most effective way of developing legible,
+        maintainable, and efficient code. The principal goal of the present report is to fill the
+        gap by describing and illustrating the alternatives that we found most useful.</para>
+    </section>
+    <section>
       <title>Convenience variables</title>
       <para>As the name implies, <emphasis role="bold">convenience variables</emphasis> are
         variables created for the benefit of the programmer, and not because they necessarily
         improve the efficiency or operation of the program. The purpose of convenience variables is
         that typically they improve the legibility of the code, which makes it easier to develop
         (one piece at a time) and maintain.</para>
-      <para>Variables that improve the efficiency of the transformation are not convenience
-        variables (although they may also be convenient). For example, if we need to calculate the
-        same result more than once in an XSLT stylesheet, performing the calculation only once and
-        saving it in a variable that we can then reuse may reduce the amount of computation and
-        improve the performance of the transformation. On the other hand, when we calculate a value
-        that we will use only once, save it in a variable, and then use the variable, not only is
-        there no similar saving, but we actually risk reducing the efficiency of the transformation
-        by imposing the overhead needed to create an intermediate structure. Within XSLT, this is
-        especially the case when variables are declared without explicit typing using the
-          <code>@as</code> attribute, which results in the expensive creation of a temporary
-        in-memory document (that we may not need) to hold the value.<footnote>
+      <para>Variables that improve the efficiency of the transformation process itself are not
+        convenience variables (although they may also be convenient). For example, if we need to
+        calculate the same result more than once in an XSLT stylesheet, performing the calculation
+        only once and saving it in a variable that we can then reuse may reduce the amount of
+        computation and improve the performance of the transformation. On the other hand, when we
+        calculate a value that we will use only once, save it in a variable, and then use the
+        variable, not only is there no similar saving, but we actually risk reducing the efficiency
+        of the transformation by imposing the overhead needed to create the variable as an
+        intermediate structure. Within XSLT, this is especially the case when variables are declared
+        without explicit typing using the <code>@as</code> attribute, which results in the expensive
+        creation of a temporary in-memory document (that we may not need) to hold the value.<footnote>
           <para><quote>If a sequence constructor is used with no <code>as</code> attribute, a
               temporary document is constructed. This is done by creating a new document node and
               using the value of the result sequence to form the children of the document
@@ -349,11 +372,12 @@
       <para>may be rewritten as:</para>
       <programlisting>&lt;xsl:variable name="y" select="func1($x)"/&gt;
 &lt;xsl:value-of select="func2($y)"&gt;</programlisting>
-      <para>Nested functions vs the use of convenience variables to un-nest them is discussed in
+      <para>The difference between nesting explicit function syntax and nesting a variable
+        containing the result of evaluating one function inside another function is discussed in
         greater detail below. The distinction between convenience variables and those that
         contribute to the quality of the code in ways that are not limited to human legibility is
         important because the costs and benefits of creating variables to hold intermediate values
-        must take into consideration whether using the variable convey advantages beyond
+        must take into consideration whether using the variable conveys advantages beyond
         convenience, that is, beyond the legibility that supports ease of maintenance.</para>
     </section>
     <section>
@@ -364,34 +388,65 @@
         in the example earlier that combines <code>normalize-space()</code> and
           <code>upper-case()</code> by nesting one inside the other. This simple nested structure
         involves only two functions, each of which accepts only one parameter, but as the number of
-        functions and the number of parameters grows, it is easy to lose one’s place in the forest
-        of parentheses. Consider, for example, a situation using the Wordhoard TEI edition of
-          <emphasis role="ital">Hamlet</emphasis>
-          (<link>http://www.wwp.northeastern.edu/outreach/seminars/xslt_2012-03/demos/xslt_intro/ham.xml</link>),
-        where our task is to construct a comma-separated list of distinct speakers (from the
-          <code>&lt;speaker&gt;</code> element children of the <code>&lt;sp&gt;</code> speech
+        functions and the number of parameters grows, it is easy to lose one’s place in a thicket of
+        parentheses. Consider, for example, a situation using the Wordhoard TEI edition of <emphasis
+          role="ital">Hamlet</emphasis>,<footnote>
+          <para><link>http://www.wwp.northeastern.edu/outreach/seminars/xslt_2012-03/demos/xslt_intro/ham.xml</link></para>
+        </footnote> where our task is to construct a comma-separated list of distinct speakers (from
+        the <code>&lt;speaker&gt;</code> element children of the <code>&lt;sp&gt;</code> speech
         elements) in Act 4. We can retrieve a deduplicated list of all &lt;speaker&gt; values with a
         single XPath function wrapped around a single path expressions:
           <code>distinct-values(//body/div[4]//speaker)</code>. The catch is that this list includes
         not only <quote>Rosencrantz</quote> and <quote>Guildenstern</quote>, both of whom speak
         alone, but also <quote>Rosencrantz and Guildenstern</quote> (as the string content of a
-        single <code>&lt;speaker&gt;</code> element) where they speak in unison. For reasons of legibility
-      we could  process this in multiple steps, saving the results of each in a convenience variable, but
-      it is also possible to perform the operation in a single line using nested functions:</para>
-      <programlisting>
-<!--        
-<?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+        single <code>&lt;speaker&gt;</code> element) where they speak in unison, and we like our
+        result to recognize that <quote>Rosencrantz and Guildenstern</quote> is not a unique
+        speaker. For reasons of legibility we could perform our processing in multiple steps, saving
+        the results of each in a convenience variable, but it is also possible to perform the
+        operation in a single line using nested functions:</para>
+      <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="xs" version="2.0"
-    xpath-default-namespace="http://www.tei-c.org/ns/1.0">
-    <xsl:output method="text"/>
-    <xsl:template match="/">
-        <xsl:value-of select="tokenize(string-join(distinct-values(//body/div[4]//speaker/replace(.,' and ', ' ')), ' '), '\s+')"/>
-    </xsl:template>
-</xsl:stylesheet>
-        
--->        
-      </programlisting>
+    xpath-default-namespace="http://www.tei-c.org/ns/1.0"&gt;
+    &lt;xsl:output method="text"/&gt;
+    &lt;xsl:template match="/"&gt;
+        &lt;xsl:value-of select="tokenize(string-join(distinct-values(//body/div[4]//speaker/replace(.,' and ', ' ')), ' '), '\s+')"/&gt;
+    &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</programlisting>
+      <para>Here we pipe the output of the innermost <code>replace()</code> function into
+          <code>distinct-values()</code>, and then into <code>string-join()</code>, and then into
+          <code>tokenize()</code>. In favor of this strategy, nesting is the most direct possible
+        representation of the pipeline relationship, since the input parameters to a function are
+        included between the parentheses and the function statement evaluates to its output. Against
+        this strategy, the depth of the nesting and the fact that several of the functions require
+        multiple parameters greatly compromise the legibility, and thus the development and
+        subsequent maintenance, of the code. Writing this code is messy and error-prone, and insofar
+        as code is read much more often than it is written, nobody would regard it as easy to read.
+        We might try to improve the legibility through indentation:</para>
+      <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="xs" version="2.0"
+    xpath-default-namespace="http://www.tei-c.org/ns/1.0"&gt;
+    &lt;xsl:output method="text"/&gt;
+    &lt;xsl:template match="/"&gt;
+        &lt;xsl:value-of select="
+            tokenize(
+                string-join(
+                    distinct-values(
+                        //body/div[4]//speaker/replace(
+                            .,
+                            ' and ',
+                            ' '
+                        )
+                    ), 
+                    ' '), 
+                '\s+')"/&gt;
+    &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</programlisting>
+      <para>although most developers would not consider this very legible either. There is good
+        reason that the functional programming language Lisp, known for its deeply nested
+        constructions, has been glossed humorously as <quote>Lots of Irritating Silly
+          Parentheses</quote> and in other equivalent ways. </para>
     </section>
     <section>
       <title>Calling templates</title>
