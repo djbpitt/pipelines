@@ -410,7 +410,9 @@
     xpath-default-namespace="http://www.tei-c.org/ns/1.0"&gt;
     &lt;xsl:output method="text"/&gt;
     &lt;xsl:template match="/"&gt;
-        &lt;xsl:value-of select="tokenize(string-join(distinct-values(//body/div[4]//speaker/replace(.,' and ', ' ')), ' '), '\s+')"/&gt;
+        &lt;xsl:value-of
+            select="distinct-values(tokenize(string-join(//body/div[4]//speaker/replace(., ' and ', ' '), ' '), '\s+'))"
+        /&gt;
     &lt;/xsl:template&gt;
 &lt;/xsl:stylesheet&gt;</programlisting>
       <para>Here we pipe the output of the innermost <code>replace()</code> function into
@@ -429,24 +431,43 @@
     xpath-default-namespace="http://www.tei-c.org/ns/1.0"&gt;
     &lt;xsl:output method="text"/&gt;
     &lt;xsl:template match="/"&gt;
-        &lt;xsl:value-of select="
-            tokenize(
-                string-join(
-                    distinct-values(
+        &lt;xsl:value-of
+            select="distinct-values(
+                tokenize(
+                    string-join(
                         //body/div[4]//speaker/replace(
                             .,
                             ' and ',
                             ' '
-                        )
-                    ), 
-                    ' '), 
-                '\s+')"/&gt;
+                        ),
+                        ' '),
+                    '\s+')
+                )"
+        /&gt;
     &lt;/xsl:template&gt;
 &lt;/xsl:stylesheet&gt;</programlisting>
       <para>although most developers would not consider this very legible either. There is good
         reason that the functional programming language Lisp, known for its deeply nested
         constructions, has been glossed humorously as <quote>Lots of Irritating Silly
-          Parentheses</quote> and in other equivalent ways. </para>
+          Parentheses</quote> and in other equivalent ways.<footnote>
+          <para>see <link>https://xkcd.com/297/</link>. The name is actually derived from
+              <quote>LISt Processor</quote>.</para>
+        </footnote></para>
+      <para>We can improve the legibility by rewriting this to use convenience variables:</para>
+      <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="xs" version="2.0"
+    xpath-default-namespace="http://www.tei-c.org/ns/1.0"&gt;
+    &lt;xsl:output method="text"/&gt;
+    &lt;xsl:template match="/"&gt;
+        &lt;xsl:variable name="first" as="xs:string+"
+            select="//body/div[4]//speaker/replace(., ' and ', ' ')"/&gt;
+        &lt;xsl:variable name="second" as="xs:string" select="string-join($first, ' ')"/&gt;
+        &lt;xsl:variable name="third" select="tokenize($second, '\s+')"/&gt;        
+        &lt;xsl:variable name="fourth" as="xs:string+" select="distinct-values($third)"/&gt;
+        &lt;xsl:sequence select="$fourth"/&gt;
+    &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</programlisting>
     </section>
     <section>
       <title>Calling templates</title>
