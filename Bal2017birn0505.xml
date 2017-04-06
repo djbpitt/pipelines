@@ -401,9 +401,8 @@
         alone, but also <quote>Rosencrantz and Guildenstern</quote> (as the string content of a
         single <code>&lt;speaker&gt;</code> element) where they speak in unison, and we like our
         result to recognize that <quote>Rosencrantz and Guildenstern</quote> is not a unique
-        speaker. For reasons of legibility we could perform our processing in multiple steps, saving
-        the results of each in a convenience variable, but it is also possible to perform the
-        operation in a single line using nested functions:</para>
+        speaker. It is possible to perform the operation in a single line using nested
+        functions:</para>
       <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="xs" version="2.0"
