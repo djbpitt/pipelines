@@ -382,8 +382,7 @@
     </section>
     <section>
       <title>Nested functions</title>
-      <!-- Lisp (LISt Processor), Lots of Irritating Silly Parentheses and others . Stuff about
-        nested functions, Chaining. Map. With and without variables. Multiple parameters.-->
+      <!-- Chaining. Map -->
       <para>One of the most natural types of micropipelining involves the nesting of functions, as
         in the example earlier that combines <code>normalize-space()</code> and
           <code>upper-case()</code> by nesting one inside the other. This simple nested structure
@@ -497,6 +496,60 @@
         involves not only changing the references among them, but also modifying the order of the
           <code>&lt;xsl:variable&gt;</code> elements so that the order of declaration follows the
         order in which the values are used.</para>
+      <para>One reason that deeply nested functions with multiple parameters are difficult to read
+        is that code is written from left to right, which tacitly encourages humans to read it from
+        left to right, but the feeding order (and thus the execution) of nested functions flows from
+        the inside out. In languages that support object-oriented programming, the <emphasis
+          role="bold">dotted method notation</emphasis> avoids this clash because both the notation
+        and the execution flow from left to right. For example, the following Python example returns
+        the same results as the XSLT above:<footnote>
+          <para>To keep the focus on the pipelining code, the speaker names, as they appear in the
+            act, are supplied as a Python list. In a real application they would be extracted from
+            the XML using one of the several Python XML libraries.</para>
+        </footnote></para>
+      <programlisting>names = ['King','Gertrude','King','Gertrude','King','Gertrude','King','Hamlet','Rosencrantz and Guildenstern',\
+         'Hamlet','Rosencrantz','Hamlet','Rosencrantz','Hamlet','Rosencrantz','Hamlet','Rosencrantz','Hamlet',\
+         'Rosencrantz','Hamlet','Rosencrantz','Hamlet','Guildenstern','Hamlet','King','Rosencrantz','King',\
+         'Rosencrantz','King','Rosencrantz','King','Hamlet','King','Hamlet','King','Hamlet','King','Hamlet','King',\
+         'Hamlet','King','Hamlet','King','Hamlet','King','Hamlet','King','Hamlet','King','Hamlet','King','Fortinbras',\
+         'Captain','Fortinbras','Hamlet','Captain','Hamlet','Captain','Hamlet','Captain','Hamlet','Captain','Hamlet',\
+         'Captain','Hamlet','Captain','Rosencrantz','Hamlet','Gertrude','Gentleman','Gertrude','Gentleman','Horatio',\
+         'Gertrude','Ophelia','Gertrude','Ophelia','Gertrude','Ophelia','Gertrude','Ophelia','Gertrude','Ophelia',\
+         'King','Ophelia','King','Ophelia','King','Ophelia','King','Ophelia','King','Gertrude','King','Gentleman',\
+         'Gertrude','King','Laertes','Danes','Laertes','Danes','Laertes','Gertrude','Laertes','King','Laertes','King',\
+         'Gertrude','King','Laertes','King','Laertes','King','Laertes','King','Laertes','King','Danes','Laertes',\
+         'Ophelia','Laertes','Ophelia','Laertes','Ophelia','Laertes','Ophelia','Laertes','Ophelia','Laertes','King',\
+         'Laertes','King','Horatio','Servant','Horatio','Sailor','Horatio','Sailor','Horatio','King','Laertes','King',\
+         'Laertes','King','Messenger','King','Messenger','King','Laertes','King','Laertes','King','Laertes','King',\
+         'Laertes','King','Laertes','King','Laertes','King','Laertes','King','Laertes','King','Laertes','King',\
+         'Laertes','King','Laertes','King','Laertes','King','Gertrude','Laertes','Gertrude','Laertes','Gertrude',\
+         'Laertes','King']
+result = set(' '.join(names).replace(' and ', ' ').split())
+print(result)</programlisting>
+      <para>The <code>set()</code> function is used to remove the duplicates and its input is
+        contained in the parentheses that immediately follow the function name, but otherwise the
+        order of execution and the syntactic expression both flow from left to right using dotted
+        method notation: from <code>join()</code> (equivalent to XSLT <code>string-join()</code>)
+        into <code>replace()</code> (also called <code>replace()</code> in XSLT) into
+          <code>split()</code> (equivalent to <code>tokenize()</code> in XSLT).<footnote>
+          <para>The syntax of the <code>join()</code> function <quote>appears to make some
+              programmers feel uncomfortable</quote>.<xref linkend="python-join"/>
+            <code>join()</code> is a method not of the list (the Python equivalent of an XSLT
+            sequence, in this case the list of speaker names), but of the string separator (in this
+            example, a space character), which suggests that the code is operating on the separator
+            character and using the list to do it. The XSLT parameters order the sequence before the
+            separator, which might suggest the reverse, that the function uses the separator to
+            transform the sequence.</para>
+        </footnote></para>
+      <para>While dotted method notation is natural within an object-oriented model, the notation is
+        not inherently incompatible with functional programming paradigms. Pipelines with dot
+        notation when working within a function model in Python are supported by the PyFunctional
+        package, which <quote>makes creating data pipelines easy by using chained functional
+          operators.</quote><xref linkend="pyfunctional"/> XSLT nonetheless does not support a
+        left-to-right function chaining notation, which means that if a pipeline of XSLT functions
+        is to be expressed in a single line of code, it must be expressed through nesting, and must
+        therefore operate from the inside out even though human coders might more instinctively read
+        and write from the left to the right.</para>
     </section>
     <section>
       <title>Calling templates</title>
@@ -612,6 +665,8 @@
         antipatterns.</quote>
       <emphasis role="ital">Journal of object-oriented programming</emphasis> 8(1): 46-48
       (1995)</bibliomixed>
+    <bibliomixed xml:id="pyfunctional" xreflabel="PyFunctional">PyFunctional (Python package).
+        (<link>https://github.com/EntilZha/PyFunctional</link>)</bibliomixed>
     <bibliomixed xml:id="mcilroy_1964" xreflabel="McIlroy 1964"><quote>The origin of Unix
         pipes,</quote> Bell Labs document archive.
       <link>http://doc.cat-v.org/unix/pipes/</link></bibliomixed>
@@ -622,6 +677,11 @@
         2016. Balisage series on markup technologies</emphasis>, vol. 17 (2016). DOI:
       10.4242/BalisageVol17.Piez01.
         <link>https://www.balisage.net/Proceedings/vol17/html/Piez01/BalisageVol17-Piez01.html</link></bibliomixed>
+    <bibliomixed xml:id="python-join" xreflabel="Why"><quote>Why is join() a string method instead
+        of a list or tuple method?</quote> Part of the <emphasis role="ital">[Python] Design and
+        history FAQ.</emphasis>
+      <link>https://docs.python.org/3/faq/design.html#why-is-join-a-string-method-instead-of-a-list-or-tuple-method</link>
+    </bibliomixed>
     <bibliomixed xml:id="XProc" xreflabel="Xproc">XProc: An XML Pipeline Language.
         <link>https://xproc.org/</link></bibliomixed>
   </bibliography>
