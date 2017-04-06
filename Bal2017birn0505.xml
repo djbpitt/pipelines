@@ -415,15 +415,21 @@
     &lt;/xsl:template&gt;
 &lt;/xsl:stylesheet&gt;</programlisting>
       <para>Here we pipe the output of the innermost <code>replace()</code> function into
-          <code>distinct-values()</code>, and then into <code>string-join()</code>, and then into
-          <code>tokenize()</code>. In favor of this strategy, nesting is the most direct possible
-        representation of the pipeline relationship, since the input parameters to a function are
-        included between the parentheses and the function statement evaluates to its output. Against
-        this strategy, the depth of the nesting and the fact that several of the functions require
-        multiple parameters greatly compromise the legibility, and thus the development and
-        subsequent maintenance, of the code. Writing this code is messy and error-prone, and insofar
-        as code is read much more often than it is written, nobody would regard it as easy to read.
-        We might try to improve the legibility through indentation:</para>
+          <code>string-join()</code>, and then into <code>tokenize()</code>, and then into
+          <code>distinct-values()</code>.<footnote>
+          <para>Replacing <quote> and </quote> with a space is a brittle strategy, since it would
+            break on multiple-speaker values that were joined in different ways, such as
+              <code>&lt;Curly, Larry, and Moe</code>. The point of the example is not find an
+            optimal solution to the multiple-speaker problem, but to provide an example of
+            pipelining functions.</para>
+        </footnote> In favor of this strategy, nesting is the most direct possible representation of
+        the pipeline relationship, since the input parameters to a function are included between the
+        parentheses and the function statement evaluates to its output. Against this strategy, the
+        depth of the nesting and the fact that several of the functions require multiple parameters
+        greatly compromise the legibility, and thus the development and subsequent maintenance, of
+        the code. Writing this code is messy and error-prone, and insofar as code is read much more
+        often than it is written, nobody would regard it as easy to read. We might try to improve
+        the legibility through indentation:</para>
       <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="xs" version="2.0"
@@ -445,10 +451,12 @@
         /&gt;
     &lt;/xsl:template&gt;
 &lt;/xsl:stylesheet&gt;</programlisting>
-      <para>although most developers would not consider this very legible either. There is good
-        reason that the functional programming language Lisp, known for its deeply nested
-        constructions, has been glossed humorously as <quote>Lots of Irritating Silly
-          Parentheses</quote> and in other equivalent ways.<footnote>
+      <para>although most developers would not consider this very legible either.<footnote>
+          <para>Furthermore, it does not emerge unchanged when the stylesheet is pretty-printed in
+            &lt;oXygen/&gt;, and probably in at least some other editors.</para>
+        </footnote> There is good reason that the functional programming language Lisp, known for
+        its deeply nested constructions, has been glossed humorously as <quote>Lots of Irritating
+          Silly Parentheses</quote> and in other equivalent ways.<footnote>
           <para>see <link>https://xkcd.com/297/</link>. The name is actually derived from
               <quote>LISt Processor</quote>.</para>
         </footnote></para>
@@ -467,6 +475,28 @@
         &lt;xsl:sequence select="$fourth"/&gt;
     &lt;/xsl:template&gt;
 &lt;/xsl:stylesheet&gt;</programlisting>
+      <para>This improvement comes at a price though. Much as the complexity of the compound
+        operations makes it easy for a developer inadvertently to nest the functions incorrectly in
+        the nested syntax, it is also easy to order them incorrectly in the version that employs
+        convenience variables. A debugging fix that is simple to describe (<quote>revise the order
+          in which the functions are applied</quote>, which might incorrectly suggest that this
+        could be mapped onto <quote>rearrange the lines in which the variables are created</quote>)
+        turns out to be error prone because each line refers to two variable names, the one it is
+        creating with its <code>@name</code> attribute and the one that it is using to determine the
+        value, which is part of the content of its <code>@select</code> attribute. Changes in the
+        order in which the functions are executed thus becomes far more complex and error-prone than
+        dragging the lines into a different order. One way to conceptualize the challenge is that
+        the variable declarations exist in a feeding relationship not just by virtue of their order
+        (although XSLT prohibits counterfeeding variable declarations), but also by virtue of the
+        way each declaration uses a value created by a different declaration.</para>
+      <para>Given that variables in XSLT cannot be redeclared, one might wonder why XSLT requires
+        that sibling variable declarations within a stylesheet be declared in the order in which
+        they are referenced. That is, one might wonder why XSLT prohibits ordering sibling
+          <code>&lt;xsl:variable&gt;</code> elements in counter-feeding order. Whatever the reason
+        for this restriction, it means that rearranging the order in which the functions are applied
+        involves not only changing the references among them, but also modifying the order of the
+          <code>&lt;xsl:variable&gt;</code> elements so that the order of declaration follows the
+        order in which the values are used.</para>
     </section>
     <section>
       <title>Calling templates</title>
