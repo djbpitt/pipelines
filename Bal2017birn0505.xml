@@ -905,6 +905,46 @@ print(result)</programlisting>
 &lt;/xsl:otherwise&gt;</programlisting>
         <para>One or the other of these two defaults should be commented out at all times.</para>
       </section>
+      <section>
+        <title>Processing the next operation</title>
+        <para>Except for the <quote>pass</quote> default, each operation creates a sequence that
+          becomes the value of the <code>$results</code> variable that wraps the
+            <code>&lt;xsl:choose&gt;</code> element. In some cases the value is a single string; in
+          others it is a sequence of strings (thus the plural name).<footnote>
+            <para>The first operation (<code>&lt;djb:prepareWords&gt;</code>) returns a sequence of
+              elements, rather than a string or sequence of strings, and is handled separately in a
+              template that matches the operation fully qualified name explicitly, outside the
+              template that matches <code>djb:*</code>. The more explicit <code>@match</code> value
+              has a higher priority than the wildcard element match, and therefore supervenes when
+              needed.</para>
+          </footnote> After the <code>$results</code> variable has been constructed, it is used to
+          construct a <code>$result</code> (singular), typed as a single string. The template then
+          passes that value to the next operation, using sibling recursion:</para>
+        <programlisting>&lt;xsl:variable name="result" as="xs:string" select="string-join($results, '')"/&gt;
+&lt;xsl:apply-templates select="$remaining[1]" mode="#current"&gt;
+    &lt;xsl:with-param name="input" select="$result"/&gt;
+    &lt;xsl:with-param name="remaining" select="remove($remaining, 1)"/&gt;
+&lt;/xsl:apply-templates&gt;</programlisting>
+      </section>
+      <section>
+        <title>Termination</title>
+        <para>The sibling recursion pattern removes each operation after it has been processed and
+          then passes the sequence of remaining operations along as a parameter. When the last
+          operation has been processed and removing it from the sequence of operations leaves an
+          empty sequence, the pipeline has finished, and returns gracefully:</para>
+        <programlisting>&lt;xsl:if test="empty($remaining)"&gt;
+    &lt;xsl:sequence select="$result"/&gt;
+&lt;/xsl:if&gt;</programlisting>
+      </section>
+      <section>
+        <title>Evaluation</title>
+        <para>The paradigm described here meets all of the desiderata enumerated earlier:</para>
+        <itemizedlist>
+          <listitem>
+            <para></para>
+          </listitem>
+        </itemizedlist>
+      </section>
     </section>
     <section>
       <title>nested calls to the replace() functions</title>
