@@ -968,46 +968,46 @@ print(result)</programlisting>
         <para/>
       </section>
     </section>
-  </section>
-  <section>
-    <title>Nested calls to the <code>replace()</code> functions</title>
     <section>
-      <title>Use cases for nested <code>replace()</code> functions</title>
-      <para>Developers who work with uncommon writing systems (ancient, medieval, minority, etc.)
-        often need to convert documents from one character coding to another. Sometimes the writing
-        system is the same but the character set is different, such as when pre-Unicode legacy
-        documents must be converted to Unicode. Sometimes the conversion is from one writing system
-        to another, such as when Cyrillic texts are Romanized for library catalog purposes, or when
-        linguistic field data in domain-specific notation are converted to International Phonetic
-        Alphabet (IPA). If the mapping from one character representation to another is one to one,
-        it can be implemented with a single <code>translate()</code> function, which has the
-        advantage of not suffering from feeding or bleeding conflicts (that is,
-          <code>translate($input,'AB','BA')</code> replaces <emphasis role="ital">A</emphasis> with
-          <emphasis role="ital">B</emphasis> and <emphasis role="ital">B</emphasis> with <emphasis
-          role="ital">A</emphasis> simultaneously, without requiring an intermediate nonce variable.
-        But mappings that are one to many, many to many, and many to one cannot be managed with
-          <code>translate()</code>, and require multiple applications of <code>replace()</code> (in
-        a way that is sensitive to feeding and bleeding issues). Mappings that are not one to one
-        must be processed before those that are one to one because the components of a character
-        sequence may also participate in one-to-one relationships outside that sequence. That is,
-        those mappings exist in a mutual bleeding relationship, and correct processing is that the
-        mapping that is not one to one takes precedence.</para>
-      <para>Even if we bracket ordering constraints, the necessity of pipelining
-          <code>replace()</code> functions (in our work, often more than two dozen) raises the
-        legibility and maintainability issues discussed above. We avoid those issues by implementing
-        a table-driven approach that separates the processing with <code>replace()</code> from the
-        match and replacement values.<footnote>
-          <para>The match parameter is a regular expression, but in most of our applications it has
-            turned out to be a string, that is, a regular expression that uses no metacharacters or
-            escapes and matches only its entire literal self.</para>
-        </footnote> The example below is drawn from Uyghur-to-IPA mapping project</para>
-    </section>
-    <section>
-      <title>The mapping table</title>
-      <para>The mapping table consists of pairs of match and replacement strings, grouped as those
-        that are not one to one (&lt;multiple&gt;) and those that are
-        (<code>&lt;unitary&gt;</code>):</para>
-      <programlisting>&lt;pairs&gt;
+      <title>Nested calls to the <code>replace()</code> functions</title>
+      <section>
+        <title>Use cases for nested <code>replace()</code> functions</title>
+        <para>Developers who work with uncommon writing systems (ancient, medieval, minority, etc.)
+          often need to convert documents from one character coding to another. Sometimes the
+          writing system is the same but the character set is different, such as when pre-Unicode
+          legacy documents must be converted to Unicode. Sometimes the conversion is from one
+          writing system to another, such as when Cyrillic texts are Romanized for library catalog
+          purposes, or when linguistic field data in domain-specific notation are converted to
+          International Phonetic Alphabet (IPA). If the mapping from one character representation to
+          another is one to one, it can be implemented with a single <code>translate()</code>
+          function, which has the advantage of not suffering from feeding or bleeding conflicts
+          (that is, <code>translate($input,'AB','BA')</code> replaces <emphasis role="ital"
+            >A</emphasis> with <emphasis role="ital">B</emphasis> and <emphasis role="ital"
+            >B</emphasis> with <emphasis role="ital">A</emphasis> simultaneously, without requiring
+          an intermediate nonce variable. But mappings that are one to many, many to many, and many
+          to one cannot be managed with <code>translate()</code>, and require multiple applications
+          of <code>replace()</code> (in a way that is sensitive to feeding and bleeding issues).
+          Mappings that are not one to one must be processed before those that are one to one
+          because the components of a character sequence may also participate in one-to-one
+          relationships outside that sequence. That is, those mappings exist in a mutual bleeding
+          relationship, and correct processing is that the mapping that is not one to one takes
+          precedence.</para>
+        <para>Even if we bracket ordering constraints, the necessity of pipelining
+            <code>replace()</code> functions (in our work, often more than two dozen) raises the
+          legibility and maintainability issues discussed above. We avoid those issues by
+          implementing a table-driven approach that separates the processing with
+            <code>replace()</code> from the match and replacement values.<footnote>
+            <para>The match parameter is a regular expression, but in most of our applications it
+              has turned out to be a string, that is, a regular expression that uses no
+              metacharacters or escapes and matches only its entire literal self.</para>
+          </footnote> The example below is drawn from Uyghur-to-IPA mapping project</para>
+      </section>
+      <section>
+        <title>The mapping table</title>
+        <para>The mapping table consists of pairs of match and replacement strings, grouped as those
+          that are not one to one (&lt;multiple&gt;) and those that are
+            (<code>&lt;unitary&gt;</code>):</para>
+        <programlisting>&lt;pairs&gt;
     &lt;multiple&gt;
         &lt;pair&gt;
             &lt;uyg&gt;ch&lt;/uyg&gt;
@@ -1153,15 +1153,15 @@ print(result)</programlisting>
         &lt;/pair&gt;
     &lt;/unitary&gt;
 &lt;/pairs&gt;</programlisting>
-      <para>Note that some of the characters in the <code>&lt;multiple&gt;</code> portion of the
-        mapping table also appear in the <code>&lt;unitary&gt;</code> portion.</para>
-    </section>
-    <section>
-      <title>Processing mappings that are not one to one</title>
-      <para>As explained above, mappings that are not one to one must be processed before those that
-        are, and the processing requires the <code>replace()</code> function. This processing is
-        performed with a single user-defined function:</para>
-      <programlisting>&lt;xsl:function name="djb:multireplace" as="xs:string"&gt;
+        <para>Note that some of the characters in the <code>&lt;multiple&gt;</code> portion of the
+          mapping table also appear in the <code>&lt;unitary&gt;</code> portion.</para>
+      </section>
+      <section>
+        <title>Processing mappings that are not one to one</title>
+        <para>As explained above, mappings that are not one to one must be processed before those
+          that are, and the processing requires the <code>replace()</code> function. This processing
+          is performed with a single user-defined function:</para>
+        <programlisting>&lt;xsl:function name="djb:multireplace" as="xs:string"&gt;
     &lt;!-- this function handles all replacements that aren't one-to-one --&gt;
     &lt;xsl:param name="instring" as="xs:string"/&gt;
     &lt;xsl:param name="pairing" as="xs:integer"/&gt;
@@ -1176,29 +1176,30 @@ print(result)</programlisting>
         &lt;/xsl:otherwise&gt;
     &lt;/xsl:choose&gt;
 &lt;/xsl:function&gt;</programlisting>
-      <para>The replacements that are not one to one are initiated with:</para>
-      <programlisting>&lt;xsl:variable name="multipairs" select="count($multiple)" as="xs:integer"/&gt;
+        <para>The replacements that are not one to one are initiated with:</para>
+        <programlisting>&lt;xsl:variable name="multipairs" select="count($multiple)" as="xs:integer"/&gt;
 &lt;xsl:variable name="temp"&gt;
     &lt;!-- normalize space, lowercase, do all non-one-to-one-replacementss --&gt;
     &lt;xsl:value-of select="djb:multireplace(normalize-space(lower-case(.)),1)"/&gt;
 &lt;/xsl:variable&gt;</programlisting>
-      <para>The second argument (the integer <quote>1</quote>) get mapped to the
-          <code>$pairing</code> variable inside the <code>djb:multireplace()</code> function. The
-        function calls itself recursively, incrementing the second argument, and returning a value
-        only when all pairs that are not one to one have been processed. The separation of the
-          <code>replace()</code> function from the arguments on which it operates makes it easy for
-        the developer to insert, delete, or rearrange pairings in the mapping file.</para>
-    </section>
-    <section>
-      <title>Processing mappings that are one to one</title>
-      <para>Mapping that are one to one can be processed with a single instance of the
-          <code>translate()</code> function:</para>
-      <programlisting>&lt;xsl:variable name="unitary-orthr" select="string-join($unitary//orthr,'')"/&gt;
+        <para>The second argument (the integer <quote>1</quote>) get mapped to the
+            <code>$pairing</code> variable inside the <code>djb:multireplace()</code> function. The
+          function calls itself recursively, incrementing the second argument, and returning a value
+          only when all pairs that are not one to one have been processed. The separation of the
+            <code>replace()</code> function from the arguments on which it operates makes it easy
+          for the developer to insert, delete, or rearrange pairings in the mapping file.</para>
+      </section>
+      <section>
+        <title>Processing mappings that are one to one</title>
+        <para>Mapping that are one to one can be processed with a single instance of the
+            <code>translate()</code> function:</para>
+        <programlisting>&lt;xsl:variable name="unitary-orthr" select="string-join($unitary//orthr,'')"/&gt;
 &lt;xsl:variable name="unitary-ipa" select="string-join($unitary//ipa,'')"/&gt;
 &lt;xsl:sequence select="translate($temp,$unitary-orthr,$unitary-ipa)"/&gt;</programlisting>
-      <para>The table-driven design all but eliminates the opportunity for off-by-one errors when
-        aligning the individual characters in the match argument with those in the replacement
-        argument.</para>
+        <para>The table-driven design all but eliminates the opportunity for off-by-one errors when
+          aligning the individual characters in the match argument with those in the replacement
+          argument.</para>
+      </section>
     </section>
   </section>
   <section>
