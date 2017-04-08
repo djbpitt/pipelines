@@ -968,8 +968,11 @@ print(result)</programlisting>
         <para/>
       </section>
     </section>
+  </section>
+  <section>
+    <title>Nested calls to the <code>replace()</code> functions</title>
     <section>
-      <title>Nested calls to the <code>replace()</code> functions</title>
+      <title>Use cases for nested <code>replace()</code> functions</title>
       <para>Developers who work with uncommon writing systems (ancient, medieval, minority, etc.)
         often need to convert documents from one character coding to another. Sometimes the writing
         system is the same but the character set is different, such as when pre-Unicode legacy
