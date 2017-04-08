@@ -327,11 +327,13 @@
         converting natural Russian orthography (enhanced by information about stress, which is not
         part of natural Russian orthography) was conceptualized as a series of rules of insertion,
         deletion, and replacement, the order of which was constrained by feeding and bleeding
-        relationships. What we missed while developing our implementation was a tutorial about
-        alternative ways of implementing micropipelines, which might guide us toward the most
-        effective way of developing legible, maintainable, and efficient code. The principal goal of
-        the present report is to fill the gap by describing and exploring the alternatives that we
-        considered.</para>
+        relationships. As we have been crafting bespoke solutions to these types of pipelining tasks
+        over the years, we have wished for a tutorial that would describe the options, say something
+        useful about the advantages and disadvantages of each, point out where they behave similarly
+        or differently from one another, and perhaps make recommendations for deciding among them in
+        the field. The principal goal of the present report is to fill the gap by describing and
+        exploring the alternatives that we considered, including the one we eventually adopted for
+        the Russian rhyme task.</para>
     </section>
     <section>
       <title>Convenience variables</title>
@@ -622,8 +624,9 @@ print(result)</programlisting>
 &lt;/xsl:template&gt;</programlisting>
       <para>The two user-defined functions might call other functions, apply templates, or otherwise
         perform operations of arbitrary complexity.</para>
-      <para>Instead of creating user-defined functions, it is possible to use convenience variables
-        with templates:</para>
+      <para>Insofar as functions and templates have similar properties (and are compiled to the same
+        type of operations within the processor), instead of creating user-defined functions, it is
+        possible to use convenience variables with templates:</para>
       <programlisting>&lt;xsl:template match="/"&gt;
     &lt;xsl:variable name="intermediate" as="document-node()"&gt;
         &lt;xsl:apply-templates select="." mode="translate_into_english"/&gt;
@@ -632,10 +635,276 @@ print(result)</programlisting>
 &lt;/xsl:template&gt;</programlisting>
       <para>Dimitre Novatchev provided real examples of this type of chaining in XSLT 1.0 and 2.0 in
         a StackOverflow response in 2010. (<xref linkend="novatchev_2010"/>)</para>
+      <para>The use of intermediate variables with either functions or templates neither requires
+        nor precludes serializing all or part of the intermediate results with
+          <code>&lt;xsl:result-document&gt;</code> or <code>&lt;xsl:message&gt;</code> if that is
+        needed for development or for production. But the use of templates with intermediate
+        variables for pipelining does exhibit one of the principal limitations discussed above of
+        using functions with variables for pipelining: editing the pipeline requires, beyond the
+        insertion, deletion, or rearrangement of lines, changing the value of the
+          <code>@select</code> attribute when the intermediate variable is used. For example, in the
+        code above, if between the translation into English and the creation of the Scabble value
+        output we want to pluralize all words that are capable of being pluralized, not only do we
+        need to create another variable, but we also need to change the value of the
+          <code>@select</code> attribute of an <code>&lt;xsl:apply-templates&gt;</code> elements in
+        a different line (modifications associated with the insertion are highlighted):</para>
+      <programlisting>&lt;xsl:template match="/"&gt;
+    &lt;xsl:variable name="intermediate" as="document-node()"&gt;
+        &lt;xsl:apply-templates select="." mode="translate_into_english"/&gt;
+    &lt;/xsl:variable&gt;
+    <emphasis role="bital">&lt;xsl:variable name="pluralized" as="document-node()"&gt;
+        &lt;xsl:apply-templates select="$intermediate" mode="pluralize"/&gt;
+    &lt;/xsl:variable&gt;</emphasis>
+    &lt;xsl:apply-templates select="<emphasis role="bital">$pluralized</emphasis>" mode="create_scrabble_values"/&gt;
+&lt;/xsl:template&gt;</programlisting>
+      <para>Inserting or deleting a step requires, in addition to the insertion or deletion itself,
+        one adjustment to the value of a <code>@select</code> attribute in a different line.
+        Rearranging steps requires more adjustments. There is also no easy way of changing the
+        location where intermediate results are serialized, whether for development or for
+        production. And because the use of intermediate variables requires additional physical lines
+        of code for legibility, it becomes harder to see the entire pipeline as an interrupted
+        sequence. What would be more robust, flexible, and maintainable would be a pattern that has
+        the following properties:</para>
+      <itemizedlist>
+        <listitem>
+          <para>Each step of the pipeline fits on a single short line of XSLT code, with no
+            wrappers, no intervening statements, and nothing else that intrudes into a bare-bones
+            list of steps.</para>
+        </listitem>
+        <listitem>
+          <para>Each step of the pipeline is entirely self-contained. Inserting, deleting, or
+            rearranging steps does not require any modification to any code pertaining to other
+            steps.</para>
+        </listitem>
+        <listitem>
+          <para>The list of steps does not mention or pass any parameters explicitly. Parameter
+            passing is handled within the processing steps (whether functions or templates), and
+            changing the sequence of steps does not require changing the code that manages
+            parameters within any of the steps.</para>
+        </listitem>
+        <listitem>
+          <para>Intermediate results can be dumped at any time (or at more than one time) as a step
+            in the pipeline, whether for development or for production purposes. Dumping is a part
+            of the pipeline that happens between transformative operations on the data; it is not
+            part of any individual transformative operation within the pipeline.</para>
+        </listitem>
+        <listitem>
+          <para>Optional: Steps can be added to the list before the code that performs them has been
+            created, without requiring any adjustment to the parameters.<footnote>
+              <para>This can be done with functions or templates by creating stubs that pass their
+                input along to the next step in the pipeline, but it would be more convenient to
+                have that happen by default, without separate explicit stub code for each
+                not-yet-fully-specified step.</para>
+            </footnote></para>
+        </listitem>
+      </itemizedlist>
     </section>
     <section>
       <title>The visitor pattern</title>
-      <para>Stuff about the visitor pattern</para>
+      <section>
+        <title>The visitor pattern in an XSLT context</title>
+        <para>The <emphasis role="bold">visitor pattern</emphasis> is usually defined and
+          illustrated in an object-oriented context that may be difficult to map onto the XSLT
+          programming paradigm.<footnote>
+            <para>I am grateful to Wendell Piez for introducing me to this pattern, and for his many
+              generous contributions, in the course of a rich correspondence in spring 2017, to my
+              elaboration of the ideas described here. Piez identifies this strategy as an instance
+              of the visitor pattern in <xref linkend="piez_2014"/>.</para>
+          </footnote> James Sugrue provides some real-world analogies:</para>
+        <blockquote>
+          <para>A real world analogy always helps with the understanding of a design pattern. One
+            example I have seen for the Visitor pattern in action is a taxi example, where the
+            customer calls orders a taxi, which arrives at his door. Once the person sits in, the
+            visiting taxi is in control of the transport for that person.</para>
+          <para>Shopping in the supermarket is another common example, where the shopping cart is
+            your set of elements. When you get to the checkout, the cashier acts as a visitor,
+            taking the disparate set of elements (your shopping), some with prices and others that
+            need to be weighed, in order to provide you with a total.</para>
+          <para>…</para>
+          <para>In summary, if you want to decouple some logical code from the elements that you’re
+            using as input, visitor is probably the best pattern for the job. (<xref
+              linkend="sugrue_2010"/>)</para>
+        </blockquote>
+        <para>Because XSLT is not object-oriented, logical operations on objects (e.g., nodes of
+          various types, atomic values) are naturally decoupled from the objects themselves. Michael
+          Kay, writing about the simulation of higher-order functions in XSLT 2.0, situates the
+          visitor pattern in a functional context:</para>
+        <blockquote>
+          <para>[Y]ou might write a function that does a depth-first traversal of a tree and
+            processes each node in the tree using a function that is supplied as an argument. This
+            makes it possible to use one tree-walking routine to achieve many different effects (you
+            might recognize this as the <emphasis role="ital">Visitor Pattern</emphasis>).</para>
+          <para>In XSLT (and XPath), functions are not first-class objects, so they cannot be passed
+            as arguments to other functions.<footnote>
+              <para>[Added:] This statement is based on XPath 2.0 and XSLT 2.0. Functions may be
+                used as first-class objects in more recent versions of the standards.</para>
+            </footnote> However, the template-matching capability of
+              <code>&lt;xsl:apply-templates&gt;</code> can be used to simulate higher order
+            functions.</para>
+          <para>The use of <code>&lt;xsl:apply-templates&gt;</code> has been developed to a fine art
+            by Dimitre Notatchev in his FXSL library (<link>http://fxsl.sourceforge.net/</link>),
+            which provides many examples of the technique. (<xref linkend="kay_2008"/>)</para>
+        </blockquote>
+      </section>
+      <section>
+        <title>The source</title>
+        <para>The full XSLT stylesheet used to identify rhyme in Russian verse, which is the source
+          of the excerpts presented here, is available at
+            <link>https://raw.githubusercontent.com/djbpitt/poetry/master/rhyme.xsl</link>. It can
+          be run against itself, in which case it processes default input that is embedded in the
+          stylesheet. Additional documentation, and the ancillary XSLT stylesheets that it imports,
+          are available at the project’s GitHub repo at
+            <link>https://github.com/djbpitt/poetry</link>.</para>
+      </section>
+      <section>
+        <title>Defining the order of operations</title>
+        <para>The transformation is driven by a sequence of operations, each of which is represented
+          by an empty element in a custom namespace:</para>
+        <programlisting>&lt;xsl:variable name="operations" as="element()+"&gt;
+    &lt;djb:prepareWords/&gt;
+    &lt;djb:lexical/&gt;
+    &lt;djb:proclitics/&gt;
+    &lt;djb:enclitics/&gt;
+    &lt;djb:tsa/&gt;
+    &lt;djb:palatalize/&gt;
+    &lt;djb:jot/&gt;
+    &lt;djb:romanize/&gt;
+    &lt;djb:finalDevoice/&gt;
+    &lt;djb:regressiveDevoice/&gt;
+    &lt;djb:regressiveVoice/&gt;
+    &lt;djb:palatalAssimilation/&gt;
+    &lt;djb:consonantCleanup/&gt;
+    &lt;djb:vowelReduction/&gt;
+    &lt;!-- 
+        diagnosticOutput writes the string to stderr as an &lt;xsl:message&gt;
+        move it around or comment it out, as appropriate
+    --&gt;
+    &lt;!--&lt;djb:diagnosticOutput/&gt;--&gt;
+    &lt;djb:stripSpaces/&gt;
+    &lt;djb:rhymeString/&gt;
+&lt;/xsl:variable&gt;</programlisting>
+        <para>Note that <code>&lt;djb:diagnosticOutput&gt;</code> can be inserted wherever the
+          developer wishes to examine interim results, including in multiple locations.</para>
+      </section>
+      <section>
+        <title>Starting the transformation</title>
+        <para>The transformation is run once for each <code>&lt;line&gt;</code> element in a poem.
+          It operates through sibling recursion, applying templates to the first member of the
+            <code>$operations</code> variable defined in the example above and passing as parameters
+          the current line (<code>$input</code>) and the sequence of remaining parameters
+            (<code>remove($operations, 1)</code>):</para>
+        <programlisting>&lt;xsl:apply-templates select="$operations[1]" mode="operate"&gt;
+    &lt;xsl:with-param name="input" select="."/&gt;
+    &lt;xsl:with-param name="remaining" select="remove($operations, 1)"/&gt;
+&lt;/xsl:apply-templates&gt;</programlisting>
+        <para>Note that we apply templates not to the input (the <code>&lt;line&gt;</code> element),
+          but to the operation, and we pass along to the operation as parameters the input and the
+          sequence of remaining operations. None of the operations refers to any other explicitly,
+          and none refers to any specific parameters, which means that inserting, deleting, and
+          rearranging operations involves changing only the list of operations itself. Because the
+          sibling recursion strategy will walk through the operations in order (see below), one
+          operation feeds the next without having to know its identity.</para>
+      </section>
+      <section>
+        <title>Template matching</title>
+        <para>When we apply templates to an element in the sequence of operations, a single template
+          matches all elements in the custom namespace, and it dispatches the processing to the
+          appropriate location within an <code>&lt;xsl:choose</code> element. That single template
+          begins as follows:</para>
+        <programlisting>&lt;xsl:template match="djb:*" mode="operate"&gt;
+    &lt;xsl:param name="input" as="xs:string" required="yes"/&gt;
+    &lt;xsl:param name="remaining" as="element()*"/&gt;
+    &lt;xsl:variable name="results" as="xs:string*"&gt;
+        &lt;xsl:choose&gt;
+            &lt;!-- ******************************************* --&gt;
+            &lt;!-- djb:lexical: Idiosyncrasies in pronunciation (including -ogo) --&gt;
+            &lt;!-- ******************************************* --&gt;
+            &lt;xsl:when test="self::djb:lexical"&gt;
+                &lt;xsl:sequence select="djb:lexical($input)"/&gt;
+            &lt;/xsl:when&gt;
+            &lt;!-- ******************************************* --&gt;
+            &lt;!-- djb:proclitics: Merge proclitics with bases --&gt;
+            &lt;!-- ******************************************* --&gt;
+            &lt;xsl:when test="self::djb:proclitics"&gt;
+                &lt;xsl:sequence select="djb:proclitic($input, 1)"/&gt;
+            &lt;/xsl:when&gt;
+            &lt;!-- ******************************************* --&gt;
+            &lt;!-- djb:enclitics: Merge enclitics with bases --&gt;
+            &lt;!-- ******************************************* --&gt;
+            &lt;xsl:when test="self::djb:enclitics"&gt;
+                &lt;xsl:sequence select="djb:enclitic($input, 1)"/&gt;
+            &lt;/xsl:when&gt;
+            &lt;!-- ******************************************* --&gt;
+            &lt;!-- djb:tsa: Convert ть?ся$ to тса --&gt;
+            &lt;!-- ******************************************* --&gt;
+            &lt;xsl:when test="self::djb:tsa"&gt;
+                &lt;xsl:sequence select="replace($input, 'ться$', 'тса')"/&gt;
+            &lt;/xsl:when&gt;
+            &lt;!-- ******************************************* --&gt;
+            &lt;!-- djb:palatalize: Capitalize all palatalized consonants (including unpaired) --&gt;
+            &lt;!-- ******************************************* --&gt;
+            &lt;xsl:when test="self::djb:palatalize"&gt;
+                &lt;xsl:variable name="result1" as="xs:string+"&gt;
+                    &lt;xsl:analyze-string select="$input"
+                        regex="([бвгдзклмнпрстфх])([яеиёюЯЕИЁЮь])"&gt;
+                        &lt;xsl:matching-substring&gt;
+                            &lt;xsl:sequence
+                                select="concat(upper-case(regex-group(1)), regex-group(2))"/&gt;
+                        &lt;/xsl:matching-substring&gt;
+                        &lt;xsl:non-matching-substring&gt;
+                            &lt;xsl:sequence select="."/&gt;
+                        &lt;/xsl:non-matching-substring&gt;
+                    &lt;/xsl:analyze-string&gt;
+                &lt;/xsl:variable&gt;
+                &lt;xsl:sequence select="translate(string-join($result1, ''), 'чйщ', 'ЧЙЩ')"/&gt;
+            &lt;/xsl:when&gt;
+        &lt;/xsl:choose&gt;
+    &lt;/xsl:variable&gt;
+&lt;/xsl:template&gt;</programlisting>
+        <para>The pipline operations are the only elements in the <code>djb:</code> namespace, so
+          this template matches all of them, and nothing else. It accepts the two parameters and
+          then creates a variable called <code>$results</code>, inside of which it uses
+            <code>&lt;xsl:choose&gt;</code> to identify the operation that is being processed. Some
+          of these operations (e.g., <code>&lt;djb:lexical&gt;</code>,
+            <code>&lt;djb:proclitics&gt;</code>, <code>&lt;djb:enclitics&gt;</code>) call
+          user-defined functions (in a separate function library) to do their work. Others use core
+          XPath library functions (e.g., <code>&lt;djb:tsa&gt;</code>). Others are longer and
+          perform more complex processing (e.g., <code>&lt;djb:palatalize&gt;</code>). Each
+            <code>&lt;xsl:when&gt;</code> element, which processes a specific operation, returns a
+          sequence as the value of the (interim) <code>$results</code> variable that wraps the
+            <code>&lt;xsl:choose&gt;</code> element. How this variable contributes to the result of
+          the surrounding template is described below.</para>
+      </section>
+      <section>
+        <title>Unmatched operations</title>
+        <para>At different moments in the development we implemented different treatment of
+          operations that are not matched in the single processing template. One option is to let
+          operations in the sequence but not associated with processing code pass their logical
+          input, unchanged, along to the next step in the pipeline. This is the simplest form of a
+          stub; the name of the operation is present, but the default behavior if the operation is
+          not defined is to pass:</para>
+        <programlisting>&lt;!-- ******************************************* --&gt;
+&lt;!-- Default to continue processing if operate step has no code--&gt;
+&lt;!-- ******************************************* --&gt;
+&lt;xsl:otherwise&gt;
+    &lt;xsl:apply-templates select="$remaining[1]" mode="visit"&gt;
+        &lt;xsl:with-param name="input" select="$input"/&gt;
+        &lt;xsl:with-param name="remaining" select="remove($remaining, 1)"/&gt;
+    &lt;/xsl:apply-templates&gt;
+&lt;/xsl:otherwise&gt;--&gt;</programlisting>
+        <para>The <code>&lt;xsl:otherwise&gt;</code> default applies templates to the next operation
+          in the sequence, passing along the input it received unchanged.</para>
+        <para>Alternatively, when the development is complete, we might prefer to raise a fatal
+          error if the sequence of operations includes any that have not been defined:</para>
+        <programlisting>&lt;!-- ******************************************* --&gt;
+&lt;!-- Default to terminate if operate step has no code--&gt;
+&lt;!-- ******************************************* --&gt;
+&lt;xsl:otherwise&gt;
+    &lt;xsl:message terminate="yes"&gt;Unmatched visitor element &lt;xsl:value-of
+        select="local-name()"/&gt;&lt;/xsl:message&gt;
+&lt;/xsl:otherwise&gt;</programlisting>
+        <para>One or the other of these two defaults should be commented out at all times.</para>
+      </section>
     </section>
     <section>
       <title>nested calls to the replace() functions</title>
@@ -649,18 +918,6 @@ print(result)</programlisting>
   </section>
   <section>
     <title>Stuff</title>
-    <para>I read Michael's article with interest, and especially the observation that the processing
-      quagmire isn't push or pull, but transitions (in either direction) between them. Michael
-      writes about the inner workings of Saxon, with the idea of avoiding the overhead of creating
-      intermediate structures by streaming that which is streamable. For the rest of us, though,
-      although Michael advises us about how to write code that is capable of operating without
-      building an interim tree in memory (or other inefficiencies), whether our code takes advantage
-      of the potential for efficiency is largely inside the black box. And while Michael has put a
-      window in the box, it still operates at a lower level, one that invites us to operate on its
-      terms, but where only a Java programmer with access to the source code can control whether it
-      turns our potentially efficient code into real efficiency. None of this problematic; it just
-      reminds me that the end-user benefits from cooperating with the efficiencies available in the
-      application, but ultimately optimization is out of our control.</para>
     <para>What I've been thinking of in connection with pipelining grows out of our earlier
       correspondence about the "visitor pattern" (which I had never heard of previously) and related
       issues. The challenge I was trying to address was that a single XSLT stylesheet affords
@@ -744,8 +1001,8 @@ print(result)</programlisting>
         programming with <code>go to</code> statements</quote>, Computing surveys 6(4): 261–301.
         <link>http://web.archive.org/web/20130731202547/http://pplab.snu.ac.kr/courses/adv_pl05/papers/p261-knuth.pdf</link></bibliomixed>
     <bibliomixed xml:id="novatchev_2010" xreflabel="Novatchev 2010">Novatchev, Dimitre. Response to
-        <quote>Is daisy chaining xslt an accepted
-        practice?</quote><link>http://stackoverflow.com/questions/4571956/is-daisy-chaining-xslt-an-accepted-practice</link></bibliomixed>
+        <quote>Is daisy chaining xslt an accepted practice?</quote>
+      <link>http://stackoverflow.com/questions/4571956/is-daisy-chaining-xslt-an-accepted-practice</link></bibliomixed>
     <bibliomixed xml:id="koenig_1995" xreflabel="Koenig 1995"><quote>Patterns and
         antipatterns.</quote>
       <emphasis role="ital">Journal of object-oriented programming</emphasis> 8(1): 46-48
@@ -762,6 +1019,12 @@ print(result)</programlisting>
         2016. Balisage series on markup technologies</emphasis>, vol. 17 (2016). DOI:
       10.4242/BalisageVol17.Piez01.
         <link>https://www.balisage.net/Proceedings/vol17/html/Piez01/BalisageVol17-Piez01.html</link></bibliomixed>
+    <bibliomixed xml:id="piez_2014" xreflabel="Piez 2014">Piez, Wendell. Response to <quote>Ignoring
+        ambiguous
+        matches.</quote><link>https://www.oxygenxml.com/archives/xsl-list/201402/msg00085.html</link></bibliomixed>
+    <bibliomixed xml:id="sugrue_2010" xreflabel="Sugrue 2010">Sugrue, James. <quote>Visitor pattern
+        tutorial with Java examples.</quote>
+      <link>https://dzone.com/articles/design-patterns-visitor</link></bibliomixed>
     <bibliomixed xml:id="python-join" xreflabel="Why"><quote>Why is join() a string method instead
         of a list or tuple method?</quote> Part of the <emphasis role="ital">[Python] Design and
         history FAQ.</emphasis>
