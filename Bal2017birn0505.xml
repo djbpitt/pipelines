@@ -938,69 +938,288 @@ print(result)</programlisting>
       </section>
       <section>
         <title>Evaluation</title>
-        <para>The paradigm described here meets all of the desiderata enumerated earlier:</para>
+        <para>The paradigm described here meets all of the desiderata enumerated earlier and
+          repeated here:</para>
         <itemizedlist>
           <listitem>
-            <para></para>
+            <para>Each step of the pipeline fits on a single short line of XSLT code, with no
+              wrappers, no intervening statements, and nothing else that intrudes into a bare-bones
+              list of steps.</para>
+          </listitem>
+          <listitem>
+            <para>Each step of the pipeline is entirely self-contained. Inserting, deleting, or
+              rearranging steps does not require any modification to any code pertaining to other
+              steps.</para>
+          </listitem>
+          <listitem>
+            <para>The list of steps does not mention or pass any parameters explicitly. Parameter
+              passing is handled within the processing steps (whether functions or templates), and
+              changing the sequence of steps does not require changing the code that manages
+              parameters within any of the steps.</para>
+          </listitem>
+          <listitem>
+            <para>Intermediate results can be dumped at any time (or at more than one time) as a
+              step in the pipeline, whether for development or for production purposes. Dumping is a
+              part of the pipeline that happens between transformative operations on the data; it is
+              not part of any individual transformative operation within the pipeline.</para>
+          </listitem>
+          <listitem>
+            <para>Steps can be added to the list before the code that performs them has been
+              created, without requiring any adjustment to the parameters.</para>
           </listitem>
         </itemizedlist>
+        <para/>
       </section>
     </section>
     <section>
       <title>nested calls to the replace() functions</title>
-      <para>Stuff about character-set conversion using table-driven sibling recursion with
-        replace()</para>
+      <para>Developers who work with uncommon writing systems (ancient, medieval, minority, etc.)
+        often need to convert documents from one character coding to another. Sometimes the writing
+        system is the same but the character set is different, such as when pre-Unicode legacy
+        documents must be converted to Unicode. Sometimes the conversion is from one writing system
+        to another, such as when Cyrillic texts are Romanized for library catalog purposes, or when
+        linguistic field data in domain-specific notation are converted to International Phonetic
+        Alphabet (IPA). If the mapping from one character representation to another is one to one,
+        it can be implemented with a single <code>translate()</code> function, which has the
+        advantage of not suffering from feeding or bleeding conflicts (that is,
+          <code>translate($input,'AB','BA')</code> replaces <emphasis role="ital">A</emphasis> with
+          <emphasis role="ital">B</emphasis> and <emphasis role="ital">B</emphasis> with <emphasis
+          role="ital">A</emphasis> simultaneously, without requiring an intermediate nonce variable.
+        But mappings that are one to many, many to many, and many to one cannot be managed with
+          <code>translate()</code>, and require multiple applications of <code>replace()</code> (in
+        a way that is sensitive to feeding and bleeding issues). Mappings that are not one to one
+        must be processed before those that are one to one because the components of a character
+        sequence may also participate in one-to-one relationships outside that sequence. That is,
+        those mappings exist in a mutual bleeding relationship, and correct processing is that the
+        mapping that is not one to one takes precedence.</para>
+      <para>Even if we bracket ordering constraints, the necessity of pipelining
+          <code>replace()</code> functions (in our work, often more than two dozen) raises the
+        legibility and maintainability issues discussed above. We avoid those issues by implementing
+        a table-driven approach that separates the processing with <code>replace()</code> from the
+        match and replacement values.<footnote>
+          <para>The match parameter is a regular expression, but in most of our applications it has
+            turned out to be a string, that is, a regular expression that uses no metacharacters or
+            escapes and matches only its entire literal self.</para>
+        </footnote> The example below is drawn from Uyghur-to-IPA mapping project</para>
+    </section>
+    <section>
+      <title>The mapping table</title>
+      <para>The mapping table consists of pairs of match and replacement strings, grouped as those
+        that are not one to one (&lt;multiple&gt;) and those that are
+        (<code>&lt;unitary&gt;</code>):</para>
+      <programlisting>&lt;pairs&gt;
+    &lt;multiple&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;ch&lt;/uyg&gt;
+            &lt;ipa&gt;ʧʰ&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;gh&lt;/uyg&gt;
+            &lt;ipa&gt;ɣ&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;ng&lt;/uyg&gt;
+            &lt;ipa&gt;ŋ&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;sh&lt;/uyg&gt;
+            &lt;ipa&gt;ʃ&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;zh&lt;/uyg&gt;
+            &lt;ipa&gt;ʒ&lt;/ipa&gt;
+        &lt;/pair&gt;
+    &lt;/multiple&gt;
+    &lt;unitary&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;a&lt;/uyg&gt;
+            &lt;ipa&gt;a&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;e&lt;/uyg&gt;
+            &lt;ipa&gt;ɛ&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;b&lt;/uyg&gt;
+            &lt;ipa&gt;b&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;d&lt;/uyg&gt;
+            &lt;ipa&gt;d&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;é&lt;/uyg&gt;
+            &lt;ipa&gt;e&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;f&lt;/uyg&gt;
+            &lt;ipa&gt;f&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;g&lt;/uyg&gt;
+            &lt;ipa&gt;g&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;h&lt;/uyg&gt;
+            &lt;ipa&gt;h&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;x&lt;/uyg&gt;
+            &lt;ipa&gt;χ&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;i&lt;/uyg&gt;
+            &lt;ipa&gt;i&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;j&lt;/uyg&gt;
+            &lt;ipa&gt;ʤ&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;k&lt;/uyg&gt;
+            &lt;ipa&gt;k&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;q&lt;/uyg&gt;
+            &lt;ipa&gt;q&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;l&lt;/uyg&gt;
+            &lt;ipa&gt;l&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;l&lt;/uyg&gt;
+            &lt;ipa&gt;ɫ&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;m&lt;/uyg&gt;
+            &lt;ipa&gt;m&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;n&lt;/uyg&gt;
+            &lt;ipa&gt;n&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;o&lt;/uyg&gt;
+            &lt;ipa&gt;o&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;ö&lt;/uyg&gt;
+            &lt;ipa&gt;ø&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;p&lt;/uyg&gt;
+            &lt;ipa&gt;pʰ&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;r&lt;/uyg&gt;
+            &lt;ipa&gt;r&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;s&lt;/uyg&gt;
+            &lt;ipa&gt;s&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;t&lt;/uyg&gt;
+            &lt;ipa&gt;tʰ&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;u&lt;/uyg&gt;
+            &lt;ipa&gt;u&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;ü&lt;/uyg&gt;
+            &lt;ipa&gt;y&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;w&lt;/uyg&gt;
+            &lt;ipa&gt;w&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;y&lt;/uyg&gt;
+            &lt;ipa&gt;j&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;z&lt;/uyg&gt;
+            &lt;ipa&gt;z&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;‘&lt;/uyg&gt;
+            &lt;ipa&gt;ˀ&lt;/ipa&gt;
+        &lt;/pair&gt;
+        &lt;pair&gt;
+            &lt;uyg&gt;'&lt;/uyg&gt;
+            &lt;ipa&gt;ˀ&lt;/ipa&gt;
+        &lt;/pair&gt;
+    &lt;/unitary&gt;
+&lt;/pairs&gt;</programlisting>
+      <para>Note that some of the characters in the <code>&lt;multiple&gt;</code> portion of the
+        mapping table also appear in the <code>&lt;unitary&gt;</code> portion.</para>
+    </section>
+    <section>
+      <title>Processing mappings that are not one to one</title>
+      <para>As explained above, mappings that are not one to one must be processed before those that
+        are, and the processing requires the <code>replace()</code> function. This processing is
+        performed with a single user-defined function:</para>
+      <programlisting>&lt;xsl:function name="djb:multireplace" as="xs:string"&gt;
+    &lt;!-- this function handles all replacements that aren't one-to-one --&gt;
+    &lt;xsl:param name="instring" as="xs:string"/&gt;
+    &lt;xsl:param name="pairing" as="xs:integer"/&gt;
+    &lt;xsl:variable name="temp"
+        select="replace($instring,$multiple[$pairing]/orthr,$multiple[$pairing]/ipa)"/&gt;
+    &lt;xsl:choose&gt;
+        &lt;xsl:when test="$pairing lt $multipairs"&gt;
+            &lt;xsl:value-of select="djb:multireplace($temp,$pairing + 1)"/&gt;
+        &lt;/xsl:when&gt;
+        &lt;xsl:otherwise&gt;
+            &lt;xsl:value-of select="$temp"/&gt;
+        &lt;/xsl:otherwise&gt;
+    &lt;/xsl:choose&gt;
+&lt;/xsl:function&gt;</programlisting>
+      <para>The replacements that are not one to one are initiated with:</para>
+      <programlisting>&lt;xsl:variable name="multipairs" select="count($multiple)" as="xs:integer"/&gt;
+&lt;xsl:variable name="temp"&gt;
+    &lt;!-- normalize space, lowercase, do all non-one-to-one-replacements
+  --&gt;
+    &lt;xsl:value-of select="djb:multireplace(normalize-space(lower-case(.)),1)"/&gt;
+&lt;/xsl:variable&gt;</programlisting>
+      <para>The second argument (the integer <quote>1</quote>) get mapped to the
+          <code>$pairing</code> variable inside the <code>djb:multireplace()</code> function. The
+        function calls itself recursively, incrementing the second argument, and returning a value
+        only when all pairs that are not one to one have been processed. The separation of the
+          <code>replace()</code> function from the arguments on which it operates makes it easy for
+        the developer to insert, delete, or rearrange pairings in the mapping file.</para>
+    </section>
+    <section>
+      <title>Processing mappings that are one to one</title>
+      <para>Mapping that are one to one can be processed with a single instance of the
+          <code>translate()</code> function:</para>
+      <programlisting>&lt;xsl:variable name="unitary-orthr" select="string-join($unitary//orthr,'')"/&gt;
+&lt;xsl:variable name="unitary-ipa" select="string-join($unitary//ipa,'')"/&gt;
+&lt;xsl:sequence select="translate($temp,$unitary-orthr,$unitary-ipa)"/&gt;</programlisting>
+      <para>The table-driven design all but eliminates the opportunity for off-by-one errors when
+        aligning the individual characters in the match argument with those in the replacement
+        argument.</para>
     </section>
   </section>
   <section>
     <title>Conclusion</title>
-    <para>Generalizations</para>
+    <para>The most natural and direct human understanding of pipelining is that it takes the output
+      of one operation (function or template) and uses it as the input to the next. The most direct
+      representations of that processing model in XSLT code encounter challenges to legibility as
+      developers drown in a sea of parentheses or struggle to update variable names and references
+      as they add, delete, or rearrange steps in the pipeline. The use cases illustrated in this
+      report avoid those challenges and struggles by moving the statement of the pipeline into a
+      sequence of simple steps (operations in the visitor pattern, mapping pairs in the
+      transliteration example) that are easy to read and to edit because adjustments in a step are
+      entirely self-contained, and do not require adjustments in others. The feeding and bleeding
+      logic remains the intellectual responsibility of the developer, but the inevitable mistakes in
+      this area are easily remedied during debugging because modifications in the order of pipeline
+      steps are constrained to a single element. None of the methods described here is new, but
+      their explicit juxtaposition, comparison, and evaluation in a tutorial context based on real
+      use cases has clarified much about micropipelining for the author, and, it is hoped, for the
+      reader, as well.</para>
   </section>
-  <section>
-    <title>Stuff</title>
-    <para>What I've been thinking of in connection with pipelining grows out of our earlier
-      correspondence about the "visitor pattern" (which I had never heard of previously) and related
-      issues. The challenge I was trying to address was that a single XSLT stylesheet affords
-      several ways of building pipelines, each of which has its own advantages and disadvantages
-      with respect to legibility and ease of use (for the coder), which are a higher priority for me
-      than execution efficiency (see below). For example, function1(function2(function3(input)))
-      invites misplaced punctuation, especially as the number of embedded functions grows and if any
-      of the functions takes more than one argument. Template processing benefits from isolating
-      each operation, similarly to functional decomposition, but it's difficult to see the entire
-      pipeline at a glance. The visitor pattern that you recommended is more legible (and therefore
-      manageable) than either of the alternatives, but it operates at an additional level of
-      abstraction that keeps it from being intuitive (which is a solipsistic way of saying that it
-      didn't occur to me as an option until you suggested it). Along a different thread that's part
-      of the same garment, I often need to transform someone else's gnarly non-Unicode slop into
-      Unicode, and the character mappings may be a combination of one-to-one, one-to-many,
-      many-to-one, and many-to-many. Some of operations are critically ordered for reasons that in
-      linguistics are termed "feeding" and "bleeding"; others can happen in any order. I've
-      developed a table-driven approach for managing these types of transformations, which I don't
-      consider especially profound or clever, but it does improve legibility over explicit nested
-      function calls. The table-driven approach calls a replace() function by running sibling
-      recursion on the mapping table (with a few details to accommodate order constraints), and the
-      table is legible in the same way as the list of template invocations in the visitor strategy.
-      My character-mapping operation finishes with the dynamic construction of arguments 2 and 3 to
-      translate() to handle the one-to-one mappings at the end of the process; those could
-      alternatively be handled by continuing the replace() pipeline, but translate() is more
-      efficient, and it has other advantages for one-to-one mapping (such as the ability to do
-      translate($stuff,'xy','yx') without having to create an intermediate representation to avoid
-      unwanted feeding of one replacement into another.</para>
-    <para>As I've been crafting bespoke solutions to these types of pipelining problems over the
-      years, I've wished for a tutorial that would list the options, say something smart about the
-      advantages and disadvantages of each, point out where they behave similarly or differently
-      from one another, and perhaps make recommendations for deciding among them in the field. That
-      tutorial is the vague target I had in mind for a Balisage submission. I was less interested in
-      the scalability and streamability on which Michael focuses not only because I don't control
-      what happens inside the black box, but also because in my world the data have never been so
-      voluminous that my coffee has gotten cold while I waited for a transformation to run to
-      completion. So while computational efficiency is self-evidently better than computational
-      inefficiency, legibility is of more value to me, since otherwise I lose more time trying to
-      understand my code than I lose running it.</para>
-    <para>The essential principle of JSP was the idea that the structure of the program should
-      mirror the structure of the data. (Kay 2009)</para>
-  </section>
-  <!-- Kay 2009: "Performance problems arise when components with different polarity are mixed within the same pipeline." -->
   <bibliography>
     <title>Works cited</title>
     <bibliomixed xml:id="cocoon" xreflabel="Cocoon">Apache Cocoon.
