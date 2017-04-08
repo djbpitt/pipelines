@@ -857,10 +857,7 @@ print(result)</programlisting>
                     &lt;/xsl:analyze-string&gt;
                 &lt;/xsl:variable&gt;
                 &lt;xsl:sequence select="translate(string-join($result1, ''), 'чйщ', 'ЧЙЩ')"/&gt;
-            &lt;/xsl:when&gt;
-        &lt;/xsl:choose&gt;
-    &lt;/xsl:variable&gt;
-&lt;/xsl:template&gt;</programlisting>
+            &lt;/xsl:when&gt;</programlisting>
         <para>The pipline operations are the only elements in the <code>djb:</code> namespace, so
           this template matches all of them, and nothing else. It accepts the two parameters and
           then creates a variable called <code>$results</code>, inside of which it uses
