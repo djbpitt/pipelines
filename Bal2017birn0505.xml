@@ -158,7 +158,7 @@
         operations that achieve the same results by following different execution logic, but the
         largely declarative XSLT programming paradigm means that the order employed by the processor
         to execute parts of a transformation is not entirely under the control of the XSLT
-        developer. Among other thigs, these properties enable an XSLT processor to improve
+        developer. Among other things, these properties enable an XSLT processor to improve
         performance by executing operations in parallel, a feature with consequences that sometimes
         surprise XSLT developers who may still be thinking within an imperative paradigm. For
         example, every new XSLT programmer has tried at some point to profile a stylesheet by
@@ -643,7 +643,7 @@ print(result)</programlisting>
         using functions with variables for pipelining: editing the pipeline requires, beyond the
         insertion, deletion, or rearrangement of lines, changing the value of the
           <code>@select</code> attribute when the intermediate variable is used. For example, in the
-        code above, if between the translation into English and the creation of the Scabble value
+        code above, if between the translation into English and the creation of the Scrabble value
         output we want to pluralize all words that are capable of being pluralized, not only do we
         need to create another variable, but we also need to change the value of the
           <code>@select</code> attribute of an <code>&lt;xsl:apply-templates&gt;</code> elements in
@@ -674,13 +674,18 @@ print(result)</programlisting>
         <listitem>
           <para>Each step of the pipeline is entirely self-contained. Inserting, deleting, or
             rearranging steps does not require any modification to any code pertaining to other
-            steps.</para>
-        </listitem>
-        <listitem>
-          <para>The list of steps does not mention or pass any parameters explicitly. Parameter
-            passing is handled within the processing steps (whether functions or templates), and
-            changing the sequence of steps does not require changing the code that manages
-            parameters within any of the steps.</para>
+            steps. This self-containment has two subcomponents: <itemizedlist>
+              <listitem>
+                <para>The code that specifies the order of operations in the pipeline does not
+                  mention or pass any values explicitly. This means that changing the sequence of
+                  steps does not require changing variable values in the arguments.</para>
+              </listitem>
+              <listitem>
+                <para>The code blocks that perform the pipeline operations all expect the same
+                  parameters and return the same result types. This means that changing the sequence
+                  of steps does not require any changes within any of the steps.</para>
+              </listitem>
+            </itemizedlist></para>
         </listitem>
         <listitem>
           <para>Intermediate results can be dumped at any time (or at more than one time) as a step
@@ -698,6 +703,7 @@ print(result)</programlisting>
             </footnote></para>
         </listitem>
       </itemizedlist>
+      <para>In the next section we describe how the visitor pattern meets these requirements.</para>
     </section>
     <section>
       <title>The visitor pattern</title>
@@ -978,29 +984,30 @@ print(result)</programlisting>
           legacy documents must be converted to Unicode. Sometimes the conversion is from one
           writing system to another, such as when Cyrillic texts are Romanized for library catalog
           purposes, or when linguistic field data in domain-specific notation are converted to
-          International Phonetic Alphabet (IPA). If the mapping from one character representation to
-          another is one to one, it can be implemented with a single <code>translate()</code>
-          function, which has the advantage of not suffering from feeding or bleeding conflicts
-          (that is, <code>translate($input,'AB','BA')</code> replaces <emphasis role="ital"
-            >A</emphasis> with <emphasis role="ital">B</emphasis> and <emphasis role="ital"
-            >B</emphasis> with <emphasis role="ital">A</emphasis> simultaneously, without requiring
-          an intermediate nonce variable. But mappings that are one to many, many to many, and many
-          to one cannot be managed with <code>translate()</code>, and require multiple applications
-          of <code>replace()</code> (in a way that is sensitive to feeding and bleeding issues).
-          Mappings that are not one to one must be processed before those that are one to one
-          because the components of a character sequence may also participate in one-to-one
-          relationships outside that sequence. That is, those mappings exist in a mutual bleeding
-          relationship, and correct processing is that the mapping that is not one to one takes
-          precedence.</para>
-        <para>Even if we bracket ordering constraints, the necessity of pipelining
-            <code>replace()</code> functions (in our work, often more than two dozen) raises the
-          legibility and maintainability issues discussed above. We avoid those issues by
+          International Phonetic Alphabet (IPA).</para>
+        <para>If the mapping from one character representation to another is one to one, it can be
+          implemented with a single <code>translate()</code> function. The implementation of
+            <code>translate()</code> has the advantage of not suffering from feeding or bleeding
+          conflicts. For example, <code>translate($input,'AB','BA')</code> replaces <emphasis
+            role="ital">A</emphasis> with <emphasis role="ital">B</emphasis> and <emphasis
+            role="ital">B</emphasis> with <emphasis role="ital">A</emphasis> simultaneously, so that
+          old instances of <quote>A</quote> that are translated to <quote>B</quote> do not then wind
+          up feeding the translation of <quote>B</quote> to <quote>A</quote>, or vice versa.</para>
+        <para>But mappings that are one to many, many to many, and many to one cannot be managed
+          with <code>translate()</code> because <code>translate()</code> can only map exactly one
+          character to exactly one character (or to zero characters). For this reason, mappings that
+          are not one-to-one are performed using the <code>replace()</code> function, and if there
+          are many such replacements, the transformation requires a pipeline of
+            <code>replace()</code> operations (which must be ordered in a way that is sensitive to
+          feeding and bleeding issues). Even if we bracket ordering constraints, the necessity of
+          pipelining <code>replace()</code> functions (in our work, often more than two dozen)
+          raises the legibility and maintainability issues discussed above. We avoid those issues by
           implementing a table-driven approach that separates the processing with
             <code>replace()</code> from the match and replacement values.<footnote>
             <para>The match parameter is a regular expression, but in most of our applications it
               has turned out to be a string, that is, a regular expression that uses no
               metacharacters or escapes and matches only its entire literal self.</para>
-          </footnote> The example below is drawn from Uyghur-to-IPA mapping project</para>
+          </footnote> The example below is drawn from Uyghur-to-IPA mapping project.</para>
       </section>
       <section>
         <title>The mapping table</title>
@@ -1183,7 +1190,7 @@ print(result)</programlisting>
     &lt;xsl:value-of select="djb:multireplace(normalize-space(lower-case(.)),1)"/&gt;
 &lt;/xsl:variable&gt;</programlisting>
         <para>The second argument (the integer <quote>1</quote>) get mapped to the
-            <code>$pairing</code> variable inside the <code>djb:multireplace()</code> function. The
+            <code>$pairing</code> parameter inside the <code>djb:multireplace()</code> function. The
           function calls itself recursively, incrementing the second argument, and returning a value
           only when all pairs that are not one to one have been processed. The separation of the
             <code>replace()</code> function from the arguments on which it operates makes it easy
