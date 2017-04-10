@@ -434,11 +434,13 @@
       <para>Here we pipe the output of the innermost <code>replace()</code> function into
           <code>string-join()</code>, and then into <code>tokenize()</code>, and then into
           <code>distinct-values()</code>.<footnote>
-          <para>Replacing <quote> and </quote> with a space is a brittle strategy, since it would
+          <para>Replacing <quote> and </quote> with a space is a brittle strategy because it would
             break on multiple-speaker values that were joined in different ways, such as
-              <code>&lt;speaker&gt;Curly, Larry, and Moe&lt;/speaker&gt;</code>. The point of the
-            example is not find an optimal solution to the multiple-speaker problem, but to provide
-            an example of pipelining functions.</para>
+              <code>&lt;speaker&gt;Curly, Larry, and Moe&lt;/speaker&gt;</code>. For that matter,
+            tokenizing on white space is brittle because it would break on single persons with names
+            like <quote>Player King</quote> or <quote>First Player</quote>. The point of the example
+            is not find an optimal solution to the multiple-speaker problem, but to provide an
+            example of pipelining functions.</para>
         </footnote> The order of functions has some flexibility, but the following constraints
         apply:</para>
       <orderedlist>
