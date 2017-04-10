@@ -1298,7 +1298,7 @@ print(result)</programlisting>
         history FAQ.</emphasis>
       <link>https://docs.python.org/3/faq/design.html#why-is-join-a-string-method-instead-of-a-list-or-tuple-method</link>
     </bibliomixed>
-    <bibliomixed xml:id="XProc" xreflabel="Xproc">XProc: An XML Pipeline Language.
+    <bibliomixed xml:id="XProc" xreflabel="XProc">XProc: An XML Pipeline Language.
         <link>https://xproc.org/</link></bibliomixed>
   </bibliography>
 </article>
