@@ -138,15 +138,16 @@
       transforming themselves gradually into antipatterns as the complexity of the context
       increases. Scalability may be a useful feature in a pattern, but the strategy that outperforms
       others with <quote>big data</quote> is not necessarily optimal in contexts where the data
-      never grow very large . For that reason, the discussion below avoids labeling specific
+      never grow very large. For that reason, the discussion below avoids labeling specific
       solutions globally as pattern or antipattern, and instead discusses both the strengths and
       weaknesses of each approach, with attention to the programming context. We thus use pattern
       and antipattern as a framework for evaluating the strengths and weaknesses of coding
-      strategies, rather than as a taxonomy for classifying them in a binary fashion.</para>
+      strategies, rather than as a taxonomy for classifying them as Good or Bad in a binary
+      fashion.</para>
   </section>
   <section>
     <title>Micropipelining in context</title>
-    <para>Pipelining may play a role in XSLT development at at least three levels: 1) internally,
+    <para>Pipelining may play a role in XSLT development on at least three levels: 1) internally,
       within the XSLT processor; 2) between or across stylesheets; and 3) within a single
       stylesheet. We describe these below by way of providing a broad context and overview, but the
       focus of this report is on only the last of the three, on pipelining within a single XSLT
@@ -383,8 +384,31 @@
       <para>may be rewritten as:</para>
       <programlisting>&lt;xsl:variable name="y" select="func1($x)"/&gt;
 &lt;xsl:value-of select="func2($y)"&gt;</programlisting>
-      <para>The difference between nesting explicit function syntax and nesting a variable
-        containing the result of evaluating one function inside another function is discussed in
+      <para>It is common, while developing and debugging pipelines, to insert, delete, alter, or
+        rearrange the individual steps in order to fine-tune their interaction. Removing a step, for
+        example, with nested functions means finding the function name, the open parenthesis (which
+        is always immediately after the function name), and the closing parenthesis. This last step
+        may be annoyingly difficult if the nesting is deep and if the functions have multiple
+        parameters; if they have only one, the closing parentheses are all bunched together at the
+        end, and it doesn’t matter which one we remove, but if they are not all consecutive, the
+        developer has to find exactly the right one. With convenience variables, removing a step
+        requires not only removing the step itself, but also adjusting a variable reference
+        elsewhere. Consider first the nested version:</para>
+      <programlisting>&lt;xsl:sequence select="func3(func2(funct1($input)))"/&gt;</programlisting>
+      <para>If we wish to remove <code>func2()</code> from the pipeline, we remove the string
+        “func2(” and any one of the closing parentheses. Now consider the version with convenience
+        variables:</para>
+      <programlisting>&lt;xsl:variable name="first" select="djb:func1($input)"/&gt;
+&lt;xsl:variable name="second" select="djb:func2($first)"/&gt;
+&lt;xsl:sequence select="djb:func3($second)"/&gt;</programlisting>
+      <para>If we remove the middle line in the interest of removing <code>djb:func2()</code> from
+        the pipeline, we can find the entire function easily, and we don’t have to look separately
+        for the closing parenthesis. But our modifications are not limited to just one line; we must
+        also change the variable reference in the last line from <code>$second</code> to
+          <code>$first</code>. This is not an unmanageable burden, but it is an extra step, and an
+        extra opportunity for error.</para>
+      <para>The difference nesting functions directly inside one another and nesting inside one
+        function a variable containing the result of evaluating another function is discussed in
         greater detail below. The distinction between convenience variables and those that
         contribute to the quality of the code in ways that are not limited to human legibility is
         important because the costs and benefits of creating variables to hold intermediate values
@@ -404,7 +428,7 @@
         produces the wrong output, and that requires reordering. That matters because part of the
         challenge of multiple nested functions, and of the multiple pairs of parentheses that come
         with them, involves legibility during development, and the fact that the nesting order
-        doesn’t matter obviates a potention need to transplant a contained function into a
+        doesn’t matter obviates a potential need to transplant a contained function into a
         containing position, and vice versa, because we inadvertently nested them incorrectly the
         first time.</para>
       <para>Consider, for example, a situation using the Wordhoard TEI edition of <emphasis
@@ -521,18 +545,19 @@
         value, which is part of the content of its <code>@select</code> attribute. Changes in the
         order in which the functions are executed thus becomes far more complex and error-prone than
         dragging the lines into a different order. One way to conceptualize the challenge is that
-        the variable declarations exist in a feeding relationship not just by virtue of their order
-        (although XSLT prohibits counterfeeding variable declarations), but also by virtue of the
-        way each declaration uses a value created by a different declaration.</para>
+        the variable declarations exist in a feeding relationship not just by virtue of the order in
+        which they are declared (see immediately below about the XSLT prohibition against using a
+        variable before it has been declared), but also by virtue of the way each declaration uses a
+        value created by a different declaration.</para>
       <para>Given that variables in XSLT cannot be redeclared, one might wonder why XSLT requires
         that sibling variable declarations within a stylesheet be declared in the order in which
         they are referenced. That is, one might wonder why XSLT prohibits ordering sibling
-          <code>&lt;xsl:variable&gt;</code> elements in counter-feeding order, much as it is
-        possible to apply templates within one template that references another regardless of the
-        order of the two. Whatever the reason for this restriction, it means that rearranging the
-        order in which the functions are applied involves not only changing the references among
-        them, but also modifying the order of the <code>&lt;xsl:variable&gt;</code> elements so that
-        the order of declaration follows the order in which the values are used.</para>
+          <code>&lt;xsl:variable&gt;</code> elements in arbitrary order, much as it is possible to
+        apply templates within one template that references another regardless of the order of the
+        two. Whatever the reason for this restriction, it means that rearranging the order in which
+        the functions are applied involves not only changing the references among them, but also
+        modifying the order of the <code>&lt;xsl:variable&gt;</code> elements so that the order of
+        declaration follows the order in which the values are used.</para>
       <para>One reason that deeply nested functions with multiple parameters are difficult to read
         is that code is written from left to right, which tacitly encourages humans to read it from
         left to right, but the feeding order (and thus the execution) of nested functions flows from
@@ -817,8 +842,8 @@ print(result)</programlisting>
         <title>Template matching</title>
         <para>When we apply templates to an element in the sequence of operations, a single template
           matches all elements in the custom namespace, and it dispatches the processing to the
-          appropriate location within an <code>&lt;xsl:choose</code> element. That single template
-          begins as follows:</para>
+          appropriate location within an <code>&lt;xsl:choose&gt;</code> element. That single
+          template begins as follows:</para>
         <programlisting>&lt;xsl:template match="djb:*" mode="operate"&gt;
     &lt;xsl:param name="input" as="xs:string" required="yes"/&gt;
     &lt;xsl:param name="remaining" as="element()*"/&gt;
@@ -912,10 +937,11 @@ print(result)</programlisting>
       </section>
       <section>
         <title>Processing the next operation</title>
-        <para>Except for the <quote>pass</quote> default, each operation creates a sequence that
-          becomes the value of the <code>$results</code> variable that wraps the
-            <code>&lt;xsl:choose&gt;</code> element. In some cases the value is a single string; in
-          others it is a sequence of strings (thus the plural name).<footnote>
+        <para>Except for the <code>&lt;xsl:otherwise&gt;</code> option that raises an error and
+          terminates, each operation creates a sequence that becomes the value of the
+            <code>$results</code> variable that wraps the <code>&lt;xsl:choose&gt;</code> element.
+          In some cases the value is a single string; in others it is a sequence of strings (thus
+          the plural name).<footnote>
             <para>The first operation (<code>&lt;djb:prepareWords&gt;</code>) returns a sequence of
               elements, rather than a string or sequence of strings, and is handled separately in a
               template that matches the operation fully qualified name explicitly, outside the
@@ -1298,7 +1324,7 @@ print(result)</programlisting>
         history FAQ.</emphasis>
       <link>https://docs.python.org/3/faq/design.html#why-is-join-a-string-method-instead-of-a-list-or-tuple-method</link>
     </bibliomixed>
-    <bibliomixed xml:id="XProc" xreflabel="Xproc">XProc: An XML Pipeline Language.
+    <bibliomixed xml:id="XProc" xreflabel="XProc">XProc: An XML Pipeline Language.
         <link>https://xproc.org/</link></bibliomixed>
   </bibliography>
 </article>
