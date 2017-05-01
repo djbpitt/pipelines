@@ -944,7 +944,7 @@ print(result)</programlisting>
           the plural name).<footnote>
             <para>The first operation (<code>&lt;djb:prepareWords&gt;</code>) returns a sequence of
               elements, rather than a string or sequence of strings, and is handled separately in a
-              template that matches the operation fully qualified name explicitly, outside the
+              template that matches the operation’s fully qualified name explicitly, outside the
               template that matches <code>djb:*</code>. The more explicit <code>@match</code> value
               has a higher priority than the wildcard element match, and therefore supervenes when
               needed.</para>
