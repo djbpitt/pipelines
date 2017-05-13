@@ -380,10 +380,10 @@
         </footnote></para>
       <para>Convenience variables may play a role in pipelining when the result of one function is
         passed to another. For example,</para>
-      <programlisting>&lt;xsl:value-of select="func2(func1($x))"/&gt;</programlisting>
+      <programlisting>&lt;xsl:value-of select="djb:func2(djb:func1($x))"/&gt;</programlisting>
       <para>may be rewritten as:</para>
-      <programlisting>&lt;xsl:variable name="y" select="func1($x)"/&gt;
-&lt;xsl:value-of select="func2($y)"&gt;</programlisting>
+      <programlisting>&lt;xsl:variable name="y" select="djb:func1($x)"/&gt;
+&lt;xsl:value-of select="djb:func2($y)"&gt;</programlisting>
       <para>It is common, while developing and debugging pipelines, to insert, delete, alter, or
         rearrange the individual steps in order to fine-tune their interaction. Removing a step, for
         example, with nested functions means finding the function name, the open parenthesis (which
@@ -394,7 +394,7 @@
         developer has to find exactly the right one. With convenience variables, removing a step
         requires not only removing the step itself, but also adjusting a variable reference
         elsewhere. Consider first the nested version:</para>
-      <programlisting>&lt;xsl:sequence select="func3(func2(funct1($input)))"/&gt;</programlisting>
+      <programlisting>&lt;xsl:sequence select="djb:func3(djb:func2(djb:funct1($input)))"/&gt;</programlisting>
       <para>If we wish to remove <code>func2()</code> from the pipeline, we remove the string
         “func2(” and any one of the closing parentheses. Now consider the version with convenience
         variables:</para>
@@ -407,8 +407,8 @@
         also change the variable reference in the last line from <code>$second</code> to
           <code>$first</code>. This is not an unmanageable burden, but it is an extra step, and an
         extra opportunity for error.</para>
-      <para>The difference nesting functions directly inside one another and nesting inside one
-        function a variable containing the result of evaluating another function is discussed in
+      <para>The difference between nesting functions directly inside one another and nesting inside
+        one function a variable containing the result of evaluating another function is discussed in
         greater detail below. The distinction between convenience variables and those that
         contribute to the quality of the code in ways that are not limited to human legibility is
         important because the costs and benefits of creating variables to hold intermediate values
@@ -534,7 +534,7 @@
         &lt;xsl:sequence select="$fourth"/&gt;
     &lt;/xsl:template&gt;
 &lt;/xsl:stylesheet&gt;</programlisting>
-      <para>This improvement comes at a price though. Much as the complexity of the compound
+      <para>This improvement comes at a price, though. Much as the complexity of the compound
         operations makes it easy for a developer inadvertently to nest the functions incorrectly in
         the nested syntax, it is also easy to order them incorrectly in the version that employs
         convenience variables. A debugging fix that is simple to describe (<quote>revise the order
@@ -553,11 +553,12 @@
         that sibling variable declarations within a stylesheet be declared in the order in which
         they are referenced. That is, one might wonder why XSLT prohibits ordering sibling
           <code>&lt;xsl:variable&gt;</code> elements in arbitrary order, much as it is possible to
-        apply templates within one template that references another regardless of the order of the
-        two. Whatever the reason for this restriction, it means that rearranging the order in which
-        the functions are applied involves not only changing the references among them, but also
-        modifying the order of the <code>&lt;xsl:variable&gt;</code> elements so that the order of
-        declaration follows the order in which the values are used.</para>
+        apply templates within one template that references another regardless of the order in which
+        the two are listed in the XSLT code. Whatever the reason for this restriction, it means that
+        rearranging the order in which the functions are applied involves not only changing the
+        references among them, but also modifying the order of the <code>&lt;xsl:variable&gt;</code>
+        elements so that the order of declaration follows the order in which the values are
+        used.</para>
       <para>One reason that deeply nested functions with multiple parameters are difficult to read
         is that code is written from left to right, which tacitly encourages humans to read it from
         left to right, but the feeding order (and thus the execution) of nested functions flows from
@@ -656,9 +657,9 @@ print(result)</programlisting>
         possible to use convenience variables with templates:</para>
       <programlisting>&lt;xsl:template match="/"&gt;
     &lt;xsl:variable name="intermediate" as="document-node()"&gt;
-        &lt;xsl:apply-templates select="." mode="translate_into_english"/&gt;
+        &lt;xsl:apply-templates select="."/&gt;
     &lt;/xsl:variable&gt;
-    &lt;xsl:apply-templates select="$intermediate" mode="create_scrabble_values"/&gt;
+    &lt;xsl:apply-templates select="$intermediate"/&gt;
 &lt;/xsl:template&gt;</programlisting>
       <para>Dimitre Novatchev provided real examples of this type of chaining in XSLT 1.0 and 2.0 in
         a StackOverflow response in 2010. (<xref linkend="novatchev_2010"/>)</para>
@@ -677,19 +678,19 @@ print(result)</programlisting>
         a different line (modifications associated with the insertion are highlighted):</para>
       <programlisting>&lt;xsl:template match="/"&gt;
     &lt;xsl:variable name="intermediate" as="document-node()"&gt;
-        &lt;xsl:apply-templates select="." mode="translate_into_english"/&gt;
+        &lt;xsl:apply-templates select="."/&gt;
     &lt;/xsl:variable&gt;
     <emphasis role="bital">&lt;xsl:variable name="pluralized" as="document-node()"&gt;
-        &lt;xsl:apply-templates select="$intermediate" mode="pluralize"/&gt;
+        &lt;xsl:apply-templates select="$intermediate"/&gt;
     &lt;/xsl:variable&gt;</emphasis>
-    &lt;xsl:apply-templates select="<emphasis role="bital">$pluralized</emphasis>" mode="create_scrabble_values"/&gt;
+    &lt;xsl:apply-templates select="<emphasis role="bital">$pluralized</emphasis>"/&gt;
 &lt;/xsl:template&gt;</programlisting>
       <para>Inserting or deleting a step requires, in addition to the insertion or deletion itself,
         one adjustment to the value of a <code>@select</code> attribute in a different line.
         Rearranging steps requires more adjustments. There is also no easy way of changing the
         location where intermediate results are serialized, whether for development or for
         production. And because the use of intermediate variables requires additional physical lines
-        of code for legibility, it becomes harder to see the entire pipeline as an interrupted
+        of code for legibility, it becomes harder to see the entire pipeline as an uninterrupted
         sequence. What would be more robust, flexible, and maintainable would be a pattern that has
         the following properties:</para>
       <itemizedlist>
