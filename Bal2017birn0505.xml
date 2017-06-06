@@ -2,15 +2,21 @@
 <?xml-model href="balisage-1-3.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
 <?xml-stylesheet type="text/xsl" href="balisage-proceedings-html.xsl"?>
 <article xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
-  <title>Patterns and antipatterns in micropipelining within XSLT</title>
+  <title>Patterns and antipatterns in micropipelining within XSLT<footnote>
+      <para>The authors is grateful to two anonymous Balisage referees for comments and
+        suggestions.</para>
+    </footnote></title>
   <info>
     <abstract>
-      <para>This report explores patterns and antipatterns for pipelining within an XSLT stylesheet.
-        The program logic of pipelining can often be expressed most directly by nesting functions
-        within one another, but code that depends on nested functions may quickly become unreadable,
-        especially if the number of functions is large or if they accept multiple parameters. This
-        report examines alternative structural and syntactic expressions for processing
-        pipelines.</para>
+      <para>The program logic of pipelining is often expressed by nesting function calls within one
+        another. An alternative formulation assigns intermediate results to a number of convenience
+        variables. But in XSLT, legibility can break down in a sea of parentheses, and maintenance
+        is a challenge when both variables and references need to change or be reordered as you add,
+        delete, or rearrange steps in the pipeline. We can avoid these challenges by expressing the
+        pipeline as a sequence of simple steps (for example, operations in a visitor pattern or a
+        table of matching value pairs for string replacement). Single steps are easier to read and
+        also easier to edit because adjustments to a step are self-contained and do not affect other
+        steps.</para>
     </abstract>
     <author>
       <personname>
@@ -162,7 +168,7 @@
         developer. Among other things, these properties enable an XSLT processor to improve
         performance by executing operations in parallel, a feature with consequences that sometimes
         surprise XSLT developers who may still be thinking within an imperative paradigm. For
-        example, every new XSLT programmer has tried at some point to profile a stylesheet by
+        example, many new XSLT programmers have tried at some point to profile a stylesheet by
         inserting the <code>current-dateTime()</code> or <code>current-time()</code> function before
         and after an operation of interest, only to be surprised when the operation appears to take
         no time at all! This happens because there is no promise in the XSLT processing model that
@@ -205,9 +211,13 @@
         output during development, and to develop each step of the pipeline without distraction by
         what precedes or follows. But disk I/O is much slower than in-memory access, and the cost of
         writing the intermediate files is likely to compromise severely the efficiency of the
-        transformation. Whether that matters it likely to depend on the volume of data; augmenting
-        the execution time by an order of magnitude may not matter to the developer if the overall
-        time is still subjectively brief.</para>
+        transformation. Saving intermediate stages to disk and processing them as separate
+        transformations also entails a cost in re-launching the transformation engine; for example,
+        running the Java implementation of Saxon has to create a new Java Virtual Machine (JVM) and
+        then start a new Saxon process in it. Whether JVM or I/O or process initialization or other
+        overhead deserves consideration it likely to depend on the volume of data; augmenting the
+        execution time by an order of magnitude may not matter to the developer if the overall time
+        is still subjectively brief.</para>
       <para>The overhead of disk I/O can be avoided by using pipelining utilities, whether broader
         purpose (such as Apache Cocoon [<xref linkend="cocoon"/>]) or more narrowly XML specific
         (XProc [<xref linkend="XProc"/>]). Pipelining tools avoid the overhead of disk I/O, although
@@ -637,7 +647,7 @@ print(result)</programlisting>
         entire intermediate document, optionally assigning the value of the function to a variable,
         and then apply another function to the intermediate document. If we create two (imaginary)
         user-defined functions, one that translates a document from Russian into English and another
-        that tokenize the English translation and returns a report (perhaps an HTML table) of the
+        that tokenizes the English translation and returns a report (perhaps an HTML table) of the
         distribution of Scrabble values of the words, the starting point of the transformation might
         look like:</para>
       <programlisting>&lt;xsl:template match="/"&gt;
@@ -731,7 +741,33 @@ print(result)</programlisting>
             </footnote></para>
         </listitem>
       </itemizedlist>
-      <para>In the next section we describe how the visitor pattern meets these requirements.</para>
+    </section>
+    <section>
+      <title>Nested template calls</title>
+      <para>Functions and templates have similar capabilities, and performing the same complex
+        operation by using nested template calls instead of nested functions addresses some of the
+        preceding desiderata. In the example below, with the original input saved in the
+          <code>$russian-text</code> variable, we pass that value as a parameter into a
+          <code>translate-into-english</code> template, the return value of which becomes the value
+        of an <code>$english-text</code> parameter, which we then pass into a
+          <code>create-scrabble-values</code> template. That last template returns a sequence of
+        integers:</para>
+      <programlisting>&lt;xsl:variable name="scrabble_values" as="xs:integer+"&gt;
+    &lt;xsl:call-template name="create-scrabble-values"&gt;
+        &lt;xsl:with-param name="english-text" as="xs:string"&gt;
+            &lt;xsl:call-template name="translate-into-english"&gt;
+                &lt;xsl:with-param name="input" select="$russian-text" as="xs:string"/&gt;
+            &lt;/xsl:call-template&gt;
+        &lt;/xsl:with-param&gt;
+    &lt;/xsl:call-template&gt;
+&lt;/xsl:variable&gt;</programlisting>
+      <para>This method addresses some, but not all, of the desiderata list above. Its primary
+        advantage is that it keeps the parameters adjacent to the template call that uses them,
+        which is an improvement over scattering them, as often happens with nested functions. But
+        insertion, deletion, and especially rearrangement are not one-line operations, and neither
+        is dumping interim results during development, and the hierarchy becomes harder to follow as
+        the number of steps, and therefore the degree of indentation in pretty-printed output,
+        increases. Below we examine how the visitor pattern addresses these concerns.</para>
     </section>
     <section>
       <title>The visitor pattern</title>
@@ -748,7 +784,7 @@ print(result)</programlisting>
         <blockquote>
           <para>A real world analogy always helps with the understanding of a design pattern. One
             example I have seen for the Visitor pattern in action is a taxi example, where the
-            customer calls orders a taxi, which arrives at his door. Once the person sits in, the
+            customer […] orders a taxi, which arrives at his door. Once the person sits in [it], the
             visiting taxi is in control of the transport for that person.</para>
           <para>Shopping in the supermarket is another common example, where the shopping cart is
             your set of elements. When you get to the checkout, the cashier acts as a visitor,
@@ -1046,145 +1082,145 @@ print(result)</programlisting>
         <programlisting>&lt;pairs&gt;
     &lt;multiple&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;ch&lt;/uyg&gt;
+            &lt;orth&gt;ch&lt;/orth&gt;
             &lt;ipa&gt;ʧʰ&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;gh&lt;/uyg&gt;
+            &lt;orth&gt;gh&lt;/orth&gt;
             &lt;ipa&gt;ɣ&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;ng&lt;/uyg&gt;
+            &lt;orth&gt;ng&lt;/orth&gt;
             &lt;ipa&gt;ŋ&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;sh&lt;/uyg&gt;
+            &lt;orth&gt;sh&lt;/orth&gt;
             &lt;ipa&gt;ʃ&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;zh&lt;/uyg&gt;
+            &lt;orth&gt;zh&lt;/orth&gt;
             &lt;ipa&gt;ʒ&lt;/ipa&gt;
         &lt;/pair&gt;
     &lt;/multiple&gt;
     &lt;unitary&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;a&lt;/uyg&gt;
+            &lt;orth&gt;a&lt;/orth&gt;
             &lt;ipa&gt;a&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;e&lt;/uyg&gt;
+            &lt;orth&gt;e&lt;/orth&gt;
             &lt;ipa&gt;ɛ&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;b&lt;/uyg&gt;
+            &lt;orth&gt;b&lt;/orth&gt;
             &lt;ipa&gt;b&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;d&lt;/uyg&gt;
+            &lt;orth&gt;d&lt;/orth&gt;
             &lt;ipa&gt;d&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;é&lt;/uyg&gt;
+            &lt;orth&gt;é&lt;/orth&gt;
             &lt;ipa&gt;e&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;f&lt;/uyg&gt;
+            &lt;orth&gt;f&lt;/orth&gt;
             &lt;ipa&gt;f&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;g&lt;/uyg&gt;
+            &lt;orth&gt;g&lt;/orth&gt;
             &lt;ipa&gt;g&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;h&lt;/uyg&gt;
+            &lt;orth&gt;h&lt;/orth&gt;
             &lt;ipa&gt;h&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;x&lt;/uyg&gt;
+            &lt;orth&gt;x&lt;/orth&gt;
             &lt;ipa&gt;χ&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;i&lt;/uyg&gt;
+            &lt;orth&gt;i&lt;/orth&gt;
             &lt;ipa&gt;i&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;j&lt;/uyg&gt;
+            &lt;orth&gt;j&lt;/orth&gt;
             &lt;ipa&gt;ʤ&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;k&lt;/uyg&gt;
+            &lt;orth&gt;k&lt;/orth&gt;
             &lt;ipa&gt;k&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;q&lt;/uyg&gt;
+            &lt;orth&gt;q&lt;/orth&gt;
             &lt;ipa&gt;q&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;l&lt;/uyg&gt;
+            &lt;orth&gt;l&lt;/orth&gt;
             &lt;ipa&gt;l&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;l&lt;/uyg&gt;
+            &lt;orth&gt;l&lt;/orth&gt;
             &lt;ipa&gt;ɫ&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;m&lt;/uyg&gt;
+            &lt;orth&gt;m&lt;/orth&gt;
             &lt;ipa&gt;m&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;n&lt;/uyg&gt;
+            &lt;orth&gt;n&lt;/orth&gt;
             &lt;ipa&gt;n&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;o&lt;/uyg&gt;
+            &lt;orth&gt;o&lt;/orth&gt;
             &lt;ipa&gt;o&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;ö&lt;/uyg&gt;
+            &lt;orth&gt;ö&lt;/orth&gt;
             &lt;ipa&gt;ø&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;p&lt;/uyg&gt;
+            &lt;orth&gt;p&lt;/orth&gt;
             &lt;ipa&gt;pʰ&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;r&lt;/uyg&gt;
+            &lt;orth&gt;r&lt;/orth&gt;
             &lt;ipa&gt;r&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;s&lt;/uyg&gt;
+            &lt;orth&gt;s&lt;/orth&gt;
             &lt;ipa&gt;s&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;t&lt;/uyg&gt;
+            &lt;orth&gt;t&lt;/orth&gt;
             &lt;ipa&gt;tʰ&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;u&lt;/uyg&gt;
+            &lt;orth&gt;u&lt;/orth&gt;
             &lt;ipa&gt;u&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;ü&lt;/uyg&gt;
+            &lt;orth&gt;ü&lt;/orth&gt;
             &lt;ipa&gt;y&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;w&lt;/uyg&gt;
+            &lt;orth&gt;w&lt;/orth&gt;
             &lt;ipa&gt;w&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;y&lt;/uyg&gt;
+            &lt;orth&gt;y&lt;/orth&gt;
             &lt;ipa&gt;j&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;z&lt;/uyg&gt;
+            &lt;orth&gt;z&lt;/orth&gt;
             &lt;ipa&gt;z&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;‘&lt;/uyg&gt;
+            &lt;orth&gt;‘&lt;/orth&gt;
             &lt;ipa&gt;ˀ&lt;/ipa&gt;
         &lt;/pair&gt;
         &lt;pair&gt;
-            &lt;uyg&gt;'&lt;/uyg&gt;
+            &lt;orth&gt;'&lt;/orth&gt;
             &lt;ipa&gt;ˀ&lt;/ipa&gt;
         &lt;/pair&gt;
     &lt;/unitary&gt;
@@ -1200,38 +1236,37 @@ print(result)</programlisting>
         <programlisting>&lt;xsl:function name="djb:multireplace" as="xs:string"&gt;
     &lt;!-- this function handles all replacements that aren't one-to-one --&gt;
     &lt;xsl:param name="instring" as="xs:string"/&gt;
-    &lt;xsl:param name="pairing" as="xs:integer"/&gt;
-    &lt;xsl:variable name="temp"
-        select="replace($instring,$multiple[$pairing]/orthr,$multiple[$pairing]/ipa)"/&gt;
+    &lt;xsl:param name="pairs" as="element(pair)*"/&gt;
     &lt;xsl:choose&gt;
-        &lt;xsl:when test="$pairing lt $multipairs"&gt;
-            &lt;xsl:value-of select="djb:multireplace($temp,$pairing + 1)"/&gt;
+        &lt;xsl:when test="empty($pairs)"&gt;
+            &lt;xsl:sequence select="$instring"/&gt;
         &lt;/xsl:when&gt;
         &lt;xsl:otherwise&gt;
-            &lt;xsl:value-of select="$temp"/&gt;
+            &lt;xsl:variable name="result"
+                select="replace($instring, $pairs[1]/orth, $pairs[1]/ipa)"/&gt;
+            &lt;xsl:sequence select="djb:multireplace($result, remove($pairs, 1))"/&gt;
         &lt;/xsl:otherwise&gt;
     &lt;/xsl:choose&gt;
 &lt;/xsl:function&gt;</programlisting>
-        <para>The replacements that are not one to one are initiated with:</para>
-        <programlisting>&lt;xsl:variable name="multipairs" select="count($multiple)" as="xs:integer"/&gt;
-&lt;xsl:variable name="temp"&gt;
-    &lt;!-- normalize space, lowercase, do all non-one-to-one-replacementss --&gt;
-    &lt;xsl:value-of select="djb:multireplace(normalize-space(lower-case(.)),1)"/&gt;
-&lt;/xsl:variable&gt;</programlisting>
-        <para>The second argument (the integer <quote>1</quote>) get mapped to the
-            <code>$pairing</code> parameter inside the <code>djb:multireplace()</code> function. The
-          function calls itself recursively, incrementing the second argument, and returning a value
-          only when all pairs that are not one to one have been processed. The separation of the
-            <code>replace()</code> function from the arguments on which it operates makes it easy
-          for the developer to insert, delete, or rearrange pairings in the mapping file.</para>
+        <para>When the function is called for the first time on a string, <code>$pairs</code> has
+          been declared as a sequence of all <code>&lt;pair></code> elements that are children of
+            <code>&lt;multiple></code>. The function (in the <code>&lt;xsl:otherwise></code> clause)
+          recruits the first <code>&lt;pair></code> elements in that sequence and uses its
+            <code>&lt;orth></code> child as the match pattern and its <code>&lt;ipa></code> child as
+          the replacement. It then removes the <code>&lt;pair></code> it has just used from the head
+          of the sequence of <code>&lt;pair></code> elements and calls itself recursively; when
+          there are no &lt;pair> elements left to process, the recursion terminates and the last
+          string value is returned. The separation of the <code>replace()</code> function from the
+          arguments on which it operates makes it easy for the developer to insert, delete, or
+          rearrange the pairings in the mapping file.</para>
       </section>
       <section>
         <title>Processing mappings that are one to one</title>
         <para>Mapping that are one to one can be processed with a single instance of the
             <code>translate()</code> function:</para>
-        <programlisting>&lt;xsl:variable name="unitary-orthr" select="string-join($unitary//orthr,'')"/&gt;
-&lt;xsl:variable name="unitary-ipa" select="string-join($unitary//ipa,'')"/&gt;
-&lt;xsl:sequence select="translate($temp,$unitary-orthr,$unitary-ipa)"/&gt;</programlisting>
+        <programlisting>&lt;xsl:variable name="unitary-orth" select="string-join($unitary//orth,'')" as="xs:string"/&gt;
+&lt;xsl:variable name="unitary-ipa" select="string-join($unitary//ipa,'')" as="xs:string"/&gt;
+&lt;xsl:sequence select="translate($temp,$unitary-orth,$unitary-ipa)"/&gt;</programlisting>
         <para>The table-driven design all but eliminates the opportunity for off-by-one errors when
           aligning the individual characters in the match argument with those in the replacement
           argument.</para>
