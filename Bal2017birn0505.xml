@@ -75,7 +75,7 @@
       typed note by Doug McIlroy about Unix. In a summary of <quote>what’s most important</quote>,
       McIlroy writes that that <quote>[w]e should have some ways of coupling programs like garden
         hose—screw in another segment when it becomes necessary to massage data in another
-        way</quote>. (<xref linkend="mcilroy_1964"/>) As for pipelines in an XSLT and XQuery context:<blockquote>
+        way</quote>. [<xref linkend="mcilroy_1964"/>] As for pipelines in an XSLT and XQuery context:<blockquote>
         <para>Constructing an application in the form of a pipeline has many advantages, the main
           ones being (a) that the code of each step in the pipeline is kept very simple; (b) that it
           is very easy to assemble an application from a set of components, thus maximizing the
@@ -85,8 +85,12 @@
         <para>A number of products are available to assist with the development and management of
           pipeline-based applications, examples being Orbeon [Orbeon] and Apache Cocoon [Cocoon].
           More recently W3C has developed a standard language, XProc [W3C XProc], for the definition
-          of pipelines. (<xref linkend="kay_2009"/>)</para>
+          of pipelines. [<xref linkend="kay_2009"/>]</para>
       </blockquote></para>
+    <para>Insofar as XSLT allocates its processing among templates and functions, Piez writes that
+        <quote>transformations are sometimes (frequently) pipelines themselves internally (in whole
+        or in part), as indeed XSLT can be seen as a language for pipelining function calls.</quote>
+        [<xref linkend="piez_2016"/>]</para>
     <para>Beyond using the output of one process as input to the next, pipelining invites
       computational efficiency by making it possible to stream the flow of information, potentially
       avoiding the overhead of building complete intermediate structures in memory or writing
@@ -97,7 +101,15 @@
       intermediate results, in a functional environment that supports streaming and multiprocessing,
       it also has the potential of offering performance benefits by eschewing the creation of
       intermediate storage objects in variables or in disk files and permitting data to be processed
-      as soon as it and a processing core become available.</para>
+      as soon as it and a processing core become available. Furthermore, pipelining may also prove
+      economically advantages with respect to development effort, about which Piez writes that:<blockquote>
+        <para>a well designed pipeline of steps can be cheaper to build and easier to maintain than
+          a single transformation doing the same thing (and [for the same reason] micropipelining
+          within a transformation is also a useful thing). Not infrequently, a complex problem can
+          be addressed by refactoring it into into phases, each phase of which can be simpler and
+          easier (even together) to build and operate than a one-pass solution—even one that by some
+          measures is more efficient. [<xref linkend="piez_2016"/>]</para>
+      </blockquote></para>
   </section>
   <section>
     <title>Patterns and antipatterns</title>
@@ -109,7 +121,7 @@
       patterns. The term <emphasis role="bold">antipattern</emphasis> was introduced by Andrew
       Koenig in 1995 to describe something that looks like a paradigm for a solution to a common
       type of problem, that is, a pattern, but that for structural reasons leads to results that do
-      not live up to <quote>best practice</quote> expectations. (<xref linkend="koenig_1995"/>) As
+      not live up to <quote>best practice</quote> expectations. [<xref linkend="koenig_1995"/>] As
       used in this report, the distinction between patterns and antipatterns helps us focus on the
       strengths and weaknesses of alternative strategies for pipelining within XSLT.</para>
     <para>It is often said that code is read more often than it is written, and from that
@@ -123,8 +135,8 @@
               actually have a strong negative impact when debugging and maintenance are considered.
               We <emphasis role="ital">should</emphasis> forget about small efficiencies, say about
               97% of the time: premature optimization is the root of all evil.</para>
-            <para>Yet we should not pass up our opportunities in that critical 3%. (<xref
-                linkend="knuth_1974"/>, p. 268; see also the larger context on that page)</para>
+            <para>Yet we should not pass up our opportunities in that critical 3%. [<xref
+                linkend="knuth_1974"/>, p. 268; see also the larger context on that page]</para>
           </blockquote></para>
       </footnote> Michael Kay, in a discussion of Jackson Structured Programming, writes that
         <quote>[t]he essential principle of JSP was the idea that the structure of the program
@@ -133,8 +145,8 @@
     <blockquote>
       <para>[T]he user achieves the benefits that come from writing the application as a controlling
         application (maintainability, readability, reusability) combining these with the
-        improvements in system performance that come from using a push-based control model. (<xref
-          linkend="kay_2009"/>)</para>
+        improvements in system performance that come from using a push-based control model. [<xref
+          linkend="kay_2009"/>]</para>
     </blockquote>
     <para>The boundary between a pattern and an antipattern is not always unambiguous. Some
       programming strategies discussed below, such as nested functions, are easy to write and read
@@ -181,7 +193,7 @@
             this rule is that XSLT is rather purist about being a strictly functional language, and
             in a strictly functional language, calling the same function twice with the same
             arguments always returns the same result. This property makes life much simpler for
-            optimizers. (<xref linkend="kay_2009"/>, p. 738)</para>
+            optimizers. [<xref linkend="kay_2009"/>, p. 738]</para>
         </blockquote></para>
       <para>The functional nature of XSLT means that although an XSLT developer might write code
         that is amenable to pipelined execution, how the pipeline is executed is at least partially
@@ -193,7 +205,7 @@
             (the consumer calls the supplier when data is required), or by components with push
             polarity (the supplier calls the consumer when data is available). <emphasis role="ital"
               >Performance problems arise when components with different polarity are mixed within
-              the same pipeline.</emphasis> (<xref linkend="kay_2009"/>, emphasis added)</para>
+              the same pipeline.</emphasis> [<xref linkend="kay_2009"/>, emphasis added]</para>
         </blockquote></para>
       <para>As important as this polarity is for performance, to the extent that it is determined
         within the XSLT processor, rather than within the XSLT code, it is at least partially
@@ -251,7 +263,7 @@
         for easier implementation and maintenance.</para>
       <para>The application that motivated this exploration is connected to our use of XML
         technologies to identify and analyze meter and rhyme in Russian verse. We presented a report
-        on the identification of meter at Balisage 2015 (<xref linkend="birnbaum_2015"/>), and in
+        on the identification of meter at Balisage 2015 [<xref linkend="birnbaum_2015"/>], and in
         order also to identify rhyme we need to convert normal Russian orthography to a phonetic
         representation. As long as the place of stress is known,<footnote>
           <para>The place of stress in Russian, as in English, is not normally indicated
@@ -368,9 +380,9 @@
           <para><quote>If a sequence constructor is used with no <code>as</code> attribute, a
               temporary document is constructed. This is done by creating a new document node and
               using the value of the result sequence to form the children of the document
-              node.</quote> (<xref linkend="kay_2008"/>, p. 503). There are times when constructing
-            a temporary tree is nonetheless appropriate; for an example, see <xref
-              linkend="kay_2008"/>, p. 510ff.</para>
+              node.</quote> [<xref linkend="kay_2008"/>, p. 503] There are times when constructing a
+            temporary tree is nonetheless appropriate; for an example, see <xref linkend="kay_2008"
+            />, p. 510ff.</para>
         </footnote></para>
       <para>As an example of a convenience variable, consider an XSLT transformation to SVG where we
         need to calculate the <code>x</code> and <code>y</code> coordinates of an object and then
@@ -631,8 +643,8 @@ print(result)</programlisting>
         notation when working within a function model in Python are supported by the PyFunctional
         package, which <quote>makes creating data pipelines easy by using chained functional
           operators</quote>, e.g.:
-        <programlisting>seq(1, 2, 3).map(lambda x: x * 2).reduce(lambda x, y: x + y)</programlisting>
-          (<xref linkend="pyfunctional"/>) XSLT, however, does not support a left-to-right function
+          <programlisting>seq(1, 2, 3).map(lambda x: x * 2).reduce(lambda x, y: x + y)</programlisting>[<xref
+          linkend="pyfunctional"/>] XSLT, however, does not support a left-to-right function
         chaining notation, which means that if a pipeline of XSLT functions is to be expressed in a
         single line of code, it must be expressed through nesting, and must therefore operate from
         the inside out even though human coders might more instinctively read and write from the
@@ -672,7 +684,7 @@ print(result)</programlisting>
     &lt;xsl:apply-templates select="$intermediate"/&gt;
 &lt;/xsl:template&gt;</programlisting>
       <para>Dimitre Novatchev provided real examples of this type of chaining in XSLT 1.0 and 2.0 in
-        a StackOverflow response in 2010. (<xref linkend="novatchev_2010"/>)</para>
+        a StackOverflow response in 2010. [<xref linkend="novatchev_2010"/>]</para>
       <para>The use of intermediate variables with either functions or templates neither requires
         nor precludes serializing all or part of the intermediate results with
           <code>&lt;xsl:result-document&gt;</code> or <code>&lt;xsl:message&gt;</code> if that is
@@ -744,25 +756,25 @@ print(result)</programlisting>
     </section>
     <section>
       <title>Nested template calls</title>
-      <para>Functions and templates have similar capabilities, and performing the same complex
-        operation by using nested template calls instead of nested functions addresses some of the
-        preceding desiderata. In the example below, with the original input saved in the
-          <code>$russian-text</code> variable, we pass that value as a parameter into a
-          <code>translate-into-english</code> template, the return value of which becomes the value
-        of an <code>$english-text</code> parameter, which we then pass into a
-          <code>create-scrabble-values</code> template. That last template returns a sequence of
-        integers:</para>
-      <programlisting>&lt;xsl:variable name="scrabble_values" as="xs:integer+"&gt;
+      <para>As was noted above, functions and templates have similar capabilities, but because the
+        nesting syntax is different, performing the same complex operation by using nested template
+        calls instead of nested functions addresses some of the preceding desiderata. In the example
+        below, we pass the original input, saved in the <code>$russian-text</code> variable, as a
+        parameter into a <code>translate-into-english</code> template, the return value of which
+        becomes the value of an <code>$english-text</code> parameter, which we then pass into a
+          <code>create-scrabble-values</code> template. That last template returns our
+        results:</para>
+      <programlisting>&lt;xsl:variable name="scrabble_values"&gt;
     &lt;xsl:call-template name="create-scrabble-values"&gt;
-        &lt;xsl:with-param name="english-text" as="xs:string"&gt;
+        &lt;xsl:with-param name="english-text" as="document-node()"&gt;
             &lt;xsl:call-template name="translate-into-english"&gt;
-                &lt;xsl:with-param name="input" select="$russian-text" as="xs:string"/&gt;
+                &lt;xsl:with-param name="input" select="$russian-text" as="document-node()"/&gt;
             &lt;/xsl:call-template&gt;
         &lt;/xsl:with-param&gt;
     &lt;/xsl:call-template&gt;
 &lt;/xsl:variable&gt;</programlisting>
-      <para>This method addresses some, but not all, of the desiderata list above. Its primary
-        advantage is that it keeps the parameters adjacent to the template call that uses them,
+      <para>This method addresses some, but not all, of the desiderata listed above. Its primary
+        advantage is that it keeps the parameters adjacent to the template calls that use them,
         which is an improvement over scattering them, as often happens with nested functions. But
         insertion, deletion, and especially rearrangement are not one-line operations, and neither
         is dumping interim results during development, and the hierarchy becomes harder to follow as
@@ -792,8 +804,8 @@ print(result)</programlisting>
             need to be weighed, in order to provide you with a total.</para>
           <para>…</para>
           <para>In summary, if you want to decouple some logical code from the elements that you’re
-            using as input, visitor is probably the best pattern for the job. (<xref
-              linkend="sugrue_2010"/>)</para>
+            using as input, visitor is probably the best pattern for the job. [<xref
+              linkend="sugrue_2010"/>]</para>
         </blockquote>
         <para>Because XSLT is not object-oriented, logical operations on objects (e.g., nodes of
           various types, atomic values) are naturally decoupled from the objects themselves. Michael
@@ -813,7 +825,7 @@ print(result)</programlisting>
             functions.</para>
           <para>The use of <code>&lt;xsl:apply-templates&gt;</code> has been developed to a fine art
             by Dimitre Notatchev in his FXSL library (<link>http://fxsl.sourceforge.net/</link>),
-            which provides many examples of the technique. (<xref linkend="kay_2008"/>)</para>
+            which provides many examples of the technique. [<xref linkend="kay_2008"/>]</para>
         </blockquote>
       </section>
       <section>
@@ -1068,17 +1080,18 @@ print(result)</programlisting>
           pipelining <code>replace()</code> functions (in our work, often more than two dozen)
           raises the legibility and maintainability issues discussed above. We avoid those issues by
           implementing a table-driven approach that separates the processing with
-            <code>replace()</code> from the match and replacement values.<footnote>
-            <para>The match parameter is a regular expression, but in most of our applications it
-              has turned out to be a string, that is, a regular expression that uses no
-              metacharacters or escapes and matches only its entire literal self.</para>
-          </footnote> The example below is drawn from Uyghur-to-IPA mapping project.</para>
+            <code>replace()</code> from the match and replacement values. The example below is drawn
+          from a Uyghur-to-IPA mapping project.</para>
       </section>
       <section>
         <title>The mapping table</title>
         <para>The mapping table consists of pairs of match and replacement strings, grouped as those
           that are not one to one (&lt;multiple&gt;) and those that are
-            (<code>&lt;unitary&gt;</code>):</para>
+            (<code>&lt;unitary&gt;</code>):<footnote>
+            <para>The match parameter is a regular expression, but in most of our applications it
+              has turned out to be a string, that is, a regular expression that uses no
+              metacharacters or escapes and matches only its entire literal self.</para>
+          </footnote></para>
         <programlisting>&lt;pairs&gt;
     &lt;multiple&gt;
         &lt;pair&gt;
@@ -1285,11 +1298,11 @@ print(result)</programlisting>
       transliteration example) that are easy to read and to edit because adjustments in a step are
       entirely self-contained, and do not require adjustments in others. The feeding and bleeding
       logic remains the intellectual responsibility of the developer, but the inevitable mistakes in
-      this area are easily remedied during debugging because modifications in the order of pipeline
-      steps are constrained to a single element. None of the methods described here is new, but
-      their explicit juxtaposition, comparison, and evaluation in a tutorial context based on real
-      use cases has clarified much about micropipelining for the author, and, it is hoped, for the
-      reader, as well.</para>
+      this area are more easily remedied during debugging because modifications in the order of
+      pipeline steps are constrained to a single element. None of the methods described here is new,
+      but their explicit juxtaposition, comparison, and evaluation in a tutorial context based on
+      real use cases has clarified much about micropipelining for the author, and, it is hoped, for
+      the reader, as well.</para>
   </section>
   <bibliography>
     <title>Works cited</title>
@@ -1306,12 +1319,12 @@ print(result)</programlisting>
         2015.</emphasis> Balisage Series on Markup Technologies, vol. 15 (2015). DOI:
       10.4242/BalisageVol15.Birnbaum01.
         <link>https://www.balisage.net/Proceedings/vol15/html/Birnbaum01/BalisageVol15-Birnbaum01.html</link></bibliomixed>
-    <bibliomixed xml:id="fuller_2016" xreflabel="Fuller 2016">Fuller, James. <quote>A catalog of
+    <!--<bibliomixed xml:id="fuller_2016" xreflabel="Fuller 2016">Fuller, James. <quote>A catalog of
         functional programming idioms in XQuery 3.1.</quote> Presented at <emphasis role="ital"
         >Balisage: The Markup Conference 2016, Washington, DC, August 2 - 5, 2016.</emphasis> In
       Proceedings of Balisage: The Markup Conference 2016. <emphasis role="ital">Balisage series on
         markup technologies,</emphasis> vol. 17 (2016). DOI: 10.4242/BalisageVol17.Fuller01.
-        <link>https://www.balisage.net/Proceedings/vol17/html/Fuller01/BalisageVol17-Fuller01.html</link></bibliomixed>
+        <link>https://www.balisage.net/Proceedings/vol17/html/Fuller01/BalisageVol17-Fuller01.html</link></bibliomixed>-->
     <bibliomixed xml:id="gamma_1994" xreflabel="Gamma 1994">Gamma, Erich, Richard Helm, Ralph
       Johnson, and John Vlissides. <quote>Design patterns: elements of reusable object-oriented
         software.</quote> Boston, MA: Addison-Wesley, 1994.</bibliomixed>
