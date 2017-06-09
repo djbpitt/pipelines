@@ -3,7 +3,7 @@
 <?xml-stylesheet type="text/xsl" href="balisage-proceedings-html.xsl"?>
 <article xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
   <title>Patterns and antipatterns in micropipelining within XSLT<footnote>
-      <para>The authors is grateful to two anonymous Balisage referees for comments and
+      <para>The author is grateful to two anonymous Balisage referees for comments and
         suggestions.</para>
     </footnote></title>
   <info>
