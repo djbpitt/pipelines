@@ -581,6 +581,9 @@
         references among them, but also modifying the order of the <code>&lt;xsl:variable&gt;</code>
         elements so that the order of declaration follows the order in which the values are
         used.</para>
+    </section>
+    <section>
+      <title>Function chaining</title>
       <para>One reason that deeply nested functions with multiple parameters are difficult to read
         is that code is written from left to right, which tacitly encourages humans to read it from
         left to right, but the feeding order (and thus the execution) of nested functions flows from
@@ -639,16 +642,19 @@ print(result)</programlisting>
             (especially) <code>string-join()</code> functions operate.</para>
         </footnote></para>
       <para>While dotted method notation is natural within an object-oriented model, the notation is
-        also not inherently incompatible with functional programming paradigms. Pipelines with dot
-        notation when working within a function model in Python are supported by the PyFunctional
-        package, which <quote>makes creating data pipelines easy by using chained functional
-          operators</quote>, e.g.:
-          <programlisting>seq(1, 2, 3).map(lambda x: x * 2).reduce(lambda x, y: x + y)</programlisting>[<xref
-          linkend="pyfunctional"/>] XSLT, however, does not support a left-to-right function
-        chaining notation, which means that if a pipeline of XSLT functions is to be expressed in a
-        single line of code, it must be expressed through nesting, and must therefore operate from
-        the inside out even though human coders might more instinctively read and write from the
-        left to the right.</para>
+        also not inherently incompatible with functional programming paradigms. For example,
+        pipelines with dot notation when working within a function model in Python are supported by
+        the PyFunctional package [<xref linkend="pyfunctional"/>], which <quote>makes creating data
+          pipelines easy by using chained functional operators</quote>, e.g.:
+        <programlisting>seq(1, 2, 3).map(lambda x: x * 2).reduce(lambda x, y: x + y)</programlisting></para>
+      <para>XPath 3.1 introduced the “arrow operator” (<code>=></code>) for this purpose, so that:
+        <programlisting>tokenize((normalize-unicode(upper-case($string))),"\s+")</programlisting>
+        can be rewritten as
+          <programlisting>$string => upper-case() => normalize-unicode() => tokenize("\s+")</programlisting>[<xref
+          linkend="XPath"/>, §3.16] One limitation to this XPath operator is that the value that is
+        passed can be used only as the <emphasis role="ital">first</emphasis> argument to the next
+        function, which means that traditional methods must be used when the value needs to be used
+        as any non-initial argument.</para>
     </section>
     <section>
       <title>Variables, templates, and functions</title>
@@ -1373,7 +1379,9 @@ print(result)</programlisting>
         history FAQ.</emphasis>
       <link>https://docs.python.org/3/faq/design.html#why-is-join-a-string-method-instead-of-a-list-or-tuple-method</link>
     </bibliomixed>
-    <bibliomixed xml:id="XProc" xreflabel="XProc">XProc: An XML Pipeline Language.
-        <link>https://xproc.org/</link></bibliomixed>
+    <bibliomixed xml:id="XPath" xreflabel="XPath 3.1">XML Path Language (XPath) 3.1. W3C
+      Recommendation 21 March 2017 <link>https://www.w3.org/TR/xpath-31/ </link></bibliomixed>
+    <bibliomixed xml:id="XProc" xreflabel="W3C XProc">XProc: An XML Pipeline Language. W3C
+      Recommendation 11 May 2010, <link>https://www.w3.org/TR/xproc/</link></bibliomixed>
   </bibliography>
 </article>
