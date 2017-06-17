@@ -102,11 +102,11 @@
       it also has the potential of offering performance benefits by eschewing the creation of
       intermediate storage objects in variables or in disk files and permitting data to be processed
       as soon as it and a processing core become available. Furthermore, pipelining may also prove
-      economically advantages with respect to development effort, about which Piez writes that:<blockquote>
+      economically advantageous with respect to development effort, about which Piez writes that:<blockquote>
         <para>a well designed pipeline of steps can be cheaper to build and easier to maintain than
           a single transformation doing the same thing (and [for the same reason] micropipelining
           within a transformation is also a useful thing). Not infrequently, a complex problem can
-          be addressed by refactoring it into into phases, each phase of which can be simpler and
+          be addressed by refactoring it into […] phases, each […] of which can be simpler and
           easier (even together) to build and operate than a one-pass solution—even one that by some
           measures is more efficient. [<xref linkend="piez_2016"/>]</para>
       </blockquote></para>
@@ -179,7 +179,7 @@
         to execute parts of a transformation is not entirely under the control of the XSLT
         developer. Among other things, these properties enable an XSLT processor to improve
         performance by executing operations in parallel, a feature with consequences that sometimes
-        surprise XSLT developers who may still be thinking within an imperative paradigm. For
+        surprise XSLT developers who may be used to thinking within an imperative paradigm. For
         example, many new XSLT programmers have tried at some point to profile a stylesheet by
         inserting the <code>current-dateTime()</code> or <code>current-time()</code> function before
         and after an operation of interest, only to be surprised when the operation appears to take
@@ -227,7 +227,7 @@
         transformations also entails a cost in re-launching the transformation engine; for example,
         running the Java implementation of Saxon has to create a new Java Virtual Machine (JVM) and
         then start a new Saxon process in it. Whether JVM or I/O or process initialization or other
-        overhead deserves consideration it likely to depend on the volume of data; augmenting the
+        overhead deserves consideration is likely to depend on the volume of data; augmenting the
         execution time by an order of magnitude may not matter to the developer if the overall time
         is still subjectively brief.</para>
       <para>The overhead of disk I/O can be avoided by using pipelining utilities, whether broader
@@ -277,7 +277,7 @@
         than in English because Russian orthography, although not phonetic, is closer to the
         phonetics of the language than is the case with English. <footnote>
           <para>An early version of the algorithm we developed for this purpose was described in
-              <xref linkend="adams_1997"/>; the XSLT implementation of the enhanced version
+              <xref linkend="adams_1997"/>. The XSLT implementation of the enhanced version
             currently used in the project is available at
               <link>https://github.com/djbpitt/poetry/blob/master/rhyme.xsl</link>.</para>
         </footnote></para>
@@ -348,7 +348,7 @@
       <para>When we began implementing in XSLT the machine-assisted identification and analysis of
         Russian rhyme, we were aware that pipelining was required because our algorithm for
         converting natural Russian orthography (enhanced by information about stress, which is not
-        part of natural Russian orthography) was conceptualized as a series of rules of insertion,
+        part of normal Russian writing) was conceptualized as a series of rules of insertion,
         deletion, and replacement, the order of which was constrained by feeding and bleeding
         relationships. As we have been crafting bespoke solutions to these types of pipelining tasks
         over the years, we have wished for a tutorial that would describe the options, say something
@@ -447,9 +447,9 @@
         parentheses. Furthermore, the <code>normalize-space()</code> and <code>upper-case()</code>
         functions do not participate in feeding or bleeding relationships, which means that once we
         have determined that we need to use them, there is no risk of nesting them in a way that
-        produces the wrong output, and that requires reordering. That matters because part of the
-        challenge of multiple nested functions, and of the multiple pairs of parentheses that come
-        with them, involves legibility during development, and the fact that the nesting order
+        produces the wrong output, and that therefore requires reordering. That matters because part
+        of the challenge of multiple nested functions, and of the multiple pairs of parentheses that
+        come with them, involves legibility during development, and the fact that the nesting order
         doesn’t matter obviates a potential need to transplant a contained function into a
         containing position, and vice versa, because we inadvertently nested them incorrectly the
         first time.</para>
@@ -458,14 +458,14 @@
           <para><link>http://www.wwp.northeastern.edu/outreach/seminars/xslt_2012-03/demos/xslt_intro/ham.xml</link></para>
         </footnote> where our task is to construct a comma-separated list of distinct speakers (from
         the <code>&lt;speaker&gt;</code> element children of the <code>&lt;sp&gt;</code> speech
-        elements) in Act 4. We can retrieve a deduplicated list of all &lt;speaker&gt; values with a
-        single XPath function wrapped around a single path expressions:
+        elements) in Act 4. We can retrieve a deduplicated list of all <code>&lt;speaker&gt;</code>
+        values with a single XPath function wrapped around a single path expression:
           <code>distinct-values(//body/div[4]//speaker)</code>. The catch is that this list includes
         not only <quote>Rosencrantz</quote> and <quote>Guildenstern</quote>, both of whom speak
         alone, but also <quote>Rosencrantz and Guildenstern</quote> (as the string content of a
-        single <code>&lt;speaker&gt;</code> element) where they speak in unison, and our result must
-        recognize that <quote>Rosencrantz and Guildenstern</quote> is not a unique speaker. It is
-        possible to perform the operation in a single line using nested functions:</para>
+        single <code>&lt;speaker&gt;</code> element) where they speak in unison, and our result
+        should recognize that <quote>Rosencrantz and Guildenstern</quote> is not a unique speaker.
+        It is possible to perform the operation in a single line using nested functions:</para>
       <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="xs" version="2.0"
@@ -485,7 +485,7 @@
               <code>&lt;speaker&gt;Curly, Larry, and Moe&lt;/speaker&gt;</code>. For that matter,
             tokenizing on white space is brittle because it would break on single persons with names
             like <quote>Player King</quote> or <quote>First Player</quote>. The point of the example
-            is not find an optimal solution to the multiple-speaker problem, but to provide an
+            is not to find an optimal solution to the multiple-speaker problem, but to provide an
             example of pipelining functions.</para>
         </footnote> The order of functions has some flexibility, but the following constraints
         apply:</para>
@@ -551,7 +551,7 @@
         &lt;xsl:variable name="first" as="xs:string+"
             select="//body/div[4]//speaker/replace(., ' and ', ' ')"/&gt;
         &lt;xsl:variable name="second" as="xs:string" select="string-join($first, ' ')"/&gt;
-        &lt;xsl:variable name="third" select="tokenize($second, '\s+')"/&gt;        
+        &lt;xsl:variable name="third" as="xs:string+" select="tokenize($second, '\s+')"/&gt;
         &lt;xsl:variable name="fourth" as="xs:string+" select="distinct-values($third)"/&gt;
         &lt;xsl:sequence select="$fourth"/&gt;
     &lt;/xsl:template&gt;
@@ -564,7 +564,7 @@
         could be mapped onto <quote>rearrange the lines in which the variables are created</quote>)
         turns out to be error prone because each line refers to two variable names, the one it is
         creating with its <code>@name</code> attribute and the one that it is using to determine the
-        value, which is part of the content of its <code>@select</code> attribute. Changes in the
+        value, which is part of the value of its <code>@select</code> attribute. Changes in the
         order in which the functions are executed thus becomes far more complex and error-prone than
         dragging the lines into a different order. One way to conceptualize the challenge is that
         the variable declarations exist in a feeding relationship not just by virtue of the order in
@@ -587,12 +587,13 @@
       <para>One reason that deeply nested functions with multiple parameters are difficult to read
         is that code is written from left to right, which tacitly encourages humans to read it from
         left to right, but the feeding order (and thus the execution) of nested functions flows from
-        the inside out. This means that the function names flow from right to left, but because
-        functions may have multiple parameters, it is necessary to look to both the left and the
-        right when moving out to the next level. In languages that support object-oriented
-        programming, the <emphasis role="bold">dotted method notation</emphasis> avoids this clash
-        because both the notation and the execution flow from left to right. For example, the
-        following Python example returns the same results as the XSLT above:<footnote>
+        the inside out. This means that the function names flow from right to left (but not starting
+        the far right of the line, which is filled with closing parentheses and possibly function
+        arguments), yet because functions may have multiple parameters, it is necessary to look to
+        both the left and the right when moving out to the next level. In languages that support
+        object-oriented programming, the <emphasis role="bold">dotted method notation</emphasis>
+        avoids this clash because both the notation and the execution flow from left to right. For
+        example, the following Python example returns the same results as the XSLT above:<footnote>
           <para>To keep the focus on the pipelining code, the speaker names, as they appear in the
             act, are supplied as a Python list. In a real application they would be extracted from
             the XML using one of the several Python XML libraries.</para>
@@ -625,7 +626,7 @@ print(result)</programlisting>
           <para>The syntax of the <code>join()</code> method <quote>appears to make some programmers
               feel uncomfortable</quote>. As is explained in <xref linkend="python-join"/>,
               <code>join()</code> is a method not of the list (the Python equivalent of an XSLT
-            sequence, in this case the sequence of speaker names), but of the string separator (in
+            sequence, in this case the sequence of speaker names), but of the separator string (in
             this example, a space character), which might suggest that the code is operating on the
             separator character and using the list to perform the operation. The reason this may
             feel unnatural is that what is being joined is the list items, and a human might think
@@ -653,8 +654,7 @@ print(result)</programlisting>
           <programlisting>$string => upper-case() => normalize-unicode() => tokenize("\s+")</programlisting>[<xref
           linkend="XPath"/>, §3.16] One limitation to this XPath operator is that the value that is
         passed can be used only as the <emphasis role="ital">first</emphasis> argument to the next
-        function, which means that traditional methods must be used when the value needs to be used
-        as any non-initial argument.</para>
+        function, which means that traditional methods must be used when the value fills any non-initial parameter.</para>
     </section>
     <section>
       <title>Variables, templates, and functions</title>
@@ -682,7 +682,7 @@ print(result)</programlisting>
         perform operations of arbitrary complexity.</para>
       <para>Insofar as functions and templates have similar properties (and are compiled to the same
         type of operations within the processor), instead of creating user-defined functions, it is
-        possible to use convenience variables with templates:</para>
+        also possible to use convenience variables with templates:</para>
       <programlisting>&lt;xsl:template match="/"&gt;
     &lt;xsl:variable name="intermediate" as="document-node()"&gt;
         &lt;xsl:apply-templates select="."/&gt;
@@ -962,9 +962,9 @@ print(result)</programlisting>
       </section>
       <section>
         <title>Unmatched operations</title>
-        <para>At different moments in the development we implemented different treatment of
+        <para>At different moments in the development we implemented different treatments of
           operations that are not matched in the single processing template. One option is to let
-          operations in the sequence but not associated with processing code pass their logical
+          operations listed in the sequence but not associated with processing code pass their logical
           input, unchanged, along to the next step in the pipeline. This is the simplest form of a
           stub; the name of the operation is present, but the default behavior if the operation is
           not defined is to pass:</para>
@@ -976,7 +976,7 @@ print(result)</programlisting>
         &lt;xsl:with-param name="input" select="$input"/&gt;
         &lt;xsl:with-param name="remaining" select="remove($remaining, 1)"/&gt;
     &lt;/xsl:apply-templates&gt;
-&lt;/xsl:otherwise&gt;--&gt;</programlisting>
+&lt;/xsl:otherwise&gt;</programlisting>
         <para>The <code>&lt;xsl:otherwise&gt;</code> default applies templates to the next operation
           in the sequence, passing along the input it received unchanged.</para>
         <para>Alternatively, when the development is complete, we might prefer to raise a fatal
@@ -1067,7 +1067,7 @@ print(result)</programlisting>
           legacy documents must be converted to Unicode. Sometimes the conversion is from one
           writing system to another, such as when Cyrillic texts are Romanized for library catalog
           purposes, or when linguistic field data in domain-specific notation are converted to
-          International Phonetic Alphabet (IPA).</para>
+          the International Phonetic Alphabet (IPA).</para>
         <para>If the mapping from one character representation to another is one to one, it can be
           implemented with a single <code>translate()</code> function. The implementation of
             <code>translate()</code> has the advantage of not suffering from feeding or bleeding
@@ -1092,7 +1092,7 @@ print(result)</programlisting>
       <section>
         <title>The mapping table</title>
         <para>The mapping table consists of pairs of match and replacement strings, grouped as those
-          that are not one to one (&lt;multiple&gt;) and those that are
+          that are not one to one (<code>&lt;multiple&gt;</code>) and those that are
             (<code>&lt;unitary&gt;</code>):<footnote>
             <para>The match parameter is a regular expression, but in most of our applications it
               has turned out to be a string, that is, a regular expression that uses no
@@ -1312,8 +1312,6 @@ print(result)</programlisting>
   </section>
   <bibliography>
     <title>Works cited</title>
-    <bibliomixed xml:id="cocoon" xreflabel="Cocoon">Apache Cocoon.
-        <link>http://cocoon.apache.org/</link></bibliomixed>
     <bibliomixed xml:id="adams_1997" xreflabel="Adams and Birnbaum 1997">Adams, Lawrence D. and
       David J. Birnbaum. <emphasis role="ital">Text technology</emphasis> 7, 1 (1997): 1–17.
       Corrected reprint available at
@@ -1325,6 +1323,8 @@ print(result)</programlisting>
         2015.</emphasis> Balisage Series on Markup Technologies, vol. 15 (2015). DOI:
       10.4242/BalisageVol15.Birnbaum01.
         <link>https://www.balisage.net/Proceedings/vol15/html/Birnbaum01/BalisageVol15-Birnbaum01.html</link></bibliomixed>
+    <bibliomixed xml:id="cocoon" xreflabel="Cocoon">Apache Cocoon.
+      <link>http://cocoon.apache.org/</link></bibliomixed>
     <!--<bibliomixed xml:id="fuller_2016" xreflabel="Fuller 2016">Fuller, James. <quote>A catalog of
         functional programming idioms in XQuery 3.1.</quote> Presented at <emphasis role="ital"
         >Balisage: The Markup Conference 2016, Washington, DC, August 2 - 5, 2016.</emphasis> In
@@ -1349,18 +1349,16 @@ print(result)</programlisting>
     <bibliomixed xml:id="knuth_1974" xreflabel="Knuth 1974">Kunth, Donald E. <quote>Structured
         programming with <code>go to</code> statements</quote>, Computing surveys 6(4): 261–301.
         <link>http://web.archive.org/web/20130731202547/http://pplab.snu.ac.kr/courses/adv_pl05/papers/p261-knuth.pdf</link></bibliomixed>
+    <bibliomixed xml:id="koenig_1995" xreflabel="Koenig 1995"><quote>Patterns and
+      antipatterns.</quote>
+      <emphasis role="ital">Journal of object-oriented programming</emphasis> 8(1): 46-48
+      (1995)</bibliomixed>
+    <bibliomixed xml:id="mcilroy_1964" xreflabel="McIlroy 1964"><quote>The origin of Unix
+      pipes,</quote> Bell Labs document archive.
+      <link>http://doc.cat-v.org/unix/pipes/</link></bibliomixed>
     <bibliomixed xml:id="novatchev_2010" xreflabel="Novatchev 2010">Novatchev, Dimitre. Response to
         <quote>Is daisy chaining xslt an accepted practice?</quote>
       <link>http://stackoverflow.com/questions/4571956/is-daisy-chaining-xslt-an-accepted-practice</link></bibliomixed>
-    <bibliomixed xml:id="koenig_1995" xreflabel="Koenig 1995"><quote>Patterns and
-        antipatterns.</quote>
-      <emphasis role="ital">Journal of object-oriented programming</emphasis> 8(1): 46-48
-      (1995)</bibliomixed>
-    <bibliomixed xml:id="pyfunctional" xreflabel="PyFunctional">PyFunctional (Python package).
-        (<link>https://github.com/EntilZha/PyFunctional</link>)</bibliomixed>
-    <bibliomixed xml:id="mcilroy_1964" xreflabel="McIlroy 1964"><quote>The origin of Unix
-        pipes,</quote> Bell Labs document archive.
-      <link>http://doc.cat-v.org/unix/pipes/</link></bibliomixed>
     <bibliomixed xml:id="piez_2016" xreflabel="Piez 2016">Piez, Wendell. <quote>Framing the problem:
         building customized editing environments and workflows.</quote> Presented at <emphasis
         role="ital">Balisage: The Markup Conference 2016, Washington, DC, August 2 - 5,
@@ -1371,6 +1369,8 @@ print(result)</programlisting>
     <bibliomixed xml:id="piez_2014" xreflabel="Piez 2014">Piez, Wendell. Response to <quote>Ignoring
         ambiguous
         matches.</quote><link>https://www.oxygenxml.com/archives/xsl-list/201402/msg00085.html</link></bibliomixed>
+    <bibliomixed xml:id="pyfunctional" xreflabel="PyFunctional">PyFunctional (Python package).
+      (<link>https://github.com/EntilZha/PyFunctional</link>)</bibliomixed>
     <bibliomixed xml:id="sugrue_2010" xreflabel="Sugrue 2010">Sugrue, James. <quote>Visitor pattern
         tutorial with Java examples.</quote>
       <link>https://dzone.com/articles/design-patterns-visitor</link></bibliomixed>
@@ -1381,7 +1381,7 @@ print(result)</programlisting>
     </bibliomixed>
     <bibliomixed xml:id="XPath" xreflabel="XPath 3.1">XML Path Language (XPath) 3.1. W3C
       Recommendation 21 March 2017 <link>https://www.w3.org/TR/xpath-31/ </link></bibliomixed>
-    <bibliomixed xml:id="XProc" xreflabel="W3C XProc">XProc: An XML Pipeline Language. W3C
+    <bibliomixed xml:id="XProc" xreflabel="XProc">XProc: An XML Pipeline Language. W3C
       Recommendation 11 May 2010, <link>https://www.w3.org/TR/xproc/</link></bibliomixed>
   </bibliography>
 </article>
