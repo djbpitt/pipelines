@@ -75,7 +75,8 @@
       typed note by Doug McIlroy about Unix. In a summary of <quote>what’s most important</quote>,
       McIlroy writes that that <quote>[w]e should have some ways of coupling programs like garden
         hose—screw in another segment when it becomes necessary to massage data in another
-        way</quote>. [<xref linkend="mcilroy_1964"/>] As for pipelines in an XSLT and XQuery context:<blockquote>
+        way</quote>. [<xref linkend="mcilroy_1964"/>] As for pipelines in an XSLT and XQuery
+      context, Michael Kay writes:<blockquote>
         <para>Constructing an application in the form of a pipeline has many advantages, the main
           ones being (a) that the code of each step in the pipeline is kept very simple; (b) that it
           is very easy to assemble an application from a set of components, thus maximizing the
@@ -87,10 +88,10 @@
           More recently W3C has developed a standard language, XProc [W3C XProc], for the definition
           of pipelines. [<xref linkend="kay_2009"/>]</para>
       </blockquote></para>
-    <para>Insofar as XSLT allocates its processing among templates and functions, Piez writes that
-        <quote>transformations are sometimes (frequently) pipelines themselves internally (in whole
-        or in part), as indeed XSLT can be seen as a language for pipelining function calls.</quote>
-        [<xref linkend="piez_2016"/>]</para>
+    <para>Insofar as XSLT allocates its processing among templates and functions, Wendell Piez
+      writes that <quote>transformations are sometimes (frequently) pipelines themselves internally
+        (in whole or in part), as indeed XSLT can be seen as a language for pipelining function
+        calls.</quote> [<xref linkend="piez_2016"/>]</para>
     <para>Beyond using the output of one process as input to the next, pipelining invites
       computational efficiency by making it possible to stream the flow of information, potentially
       avoiding the overhead of building complete intermediate structures in memory or writing
@@ -184,8 +185,8 @@
         inserting the <code>current-dateTime()</code> or <code>current-time()</code> function before
         and after an operation of interest, only to be surprised when the operation appears to take
         no time at all! This happens because there is no promise in the XSLT processing model that
-        these functions will be executed in the order in which they appear in the XSLT code, and for
-        that reason XSLT was designed to follow a functional programming paradigm here:<blockquote>
+        functions will be executed in the order in which they appear in the XSLT code, and for that
+        reason XSLT was designed to follow a functional programming paradigm here:<blockquote>
           <para>In XSLT 2.0 it is defined that multiple calls on <code>current-dateTime()</code> and
             the other two [time and date] functions will return the same result every time they are
             called within a single transformation. This means that you can’t call the function at
@@ -222,14 +223,14 @@
         the overall transformation. This approach also makes it easy to examine the intermediate
         output during development, and to develop each step of the pipeline without distraction by
         what precedes or follows. But disk I/O is much slower than in-memory access, and the cost of
-        writing the intermediate files is likely to compromise severely the efficiency of the
-        transformation. Saving intermediate stages to disk and processing them as separate
-        transformations also entails a cost in re-launching the transformation engine; for example,
-        running the Java implementation of Saxon has to create a new Java Virtual Machine (JVM) and
-        then start a new Saxon process in it. Whether JVM or I/O or process initialization or other
-        overhead deserves consideration is likely to depend on the volume of data; augmenting the
-        execution time by an order of magnitude may not matter to the developer if the overall time
-        is still subjectively brief.</para>
+        writing the intermediate files is likely to compromise the efficiency of the transformation.
+        Saving intermediate stages to disk and processing them as separate transformations also
+        entails a cost in re-launching the transformation engine; for example, running the Java
+        implementation of Saxon has to create a new Java Virtual Machine (JVM) and then start a new
+        Saxon process. Whether JVM or I/O or process initialization or other overhead deserves
+        consideration is likely to depend on the volume of data; augmenting the execution time by an
+        order of magnitude may not matter to the developer if the overall time is still subjectively
+        brief.</para>
       <para>The overhead of disk I/O can be avoided by using pipelining utilities, whether broader
         purpose (such as Apache Cocoon [<xref linkend="cocoon"/>]) or more narrowly XML specific
         (XProc [<xref linkend="XProc"/>]). Pipelining tools avoid the overhead of disk I/O, although
@@ -311,8 +312,8 @@
             they would observe a feeding relationship. For example, if in Rule A <emphasis
               role="ital">y → z</emphasis> and in Rule B <emphasis role="ital">x → y</emphasis>, the
             two stand in a counter-feeding relationship, since Rule B creates what would have been
-            new input into Rule A, but fails to do so because Rule A operates first, and is no
-            longer active when the potential new input is created by Rule B.</para>
+            new input into Rule A, except that it fails to do so because Rule A operates first, and
+            is no longer active when the potential new input is created by Rule B.</para>
         </listitem>
         <listitem>
           <para><emphasis role="bold">Counter-bleeding order.</emphasis> The output of one rule does
@@ -449,7 +450,7 @@
         have determined that we need to use them, there is no risk of nesting them in a way that
         produces the wrong output, and that therefore requires reordering. That matters because part
         of the challenge of multiple nested functions, and of the multiple pairs of parentheses that
-        come with them, involves legibility during development, and the fact that the nesting order
+        come with them, involves legibility during development. The fact that here the nesting order
         doesn’t matter obviates a potential need to transplant a contained function into a
         containing position, and vice versa, because we inadvertently nested them incorrectly the
         first time.</para>
@@ -644,9 +645,9 @@ print(result)</programlisting>
         </footnote></para>
       <para>While dotted method notation is natural within an object-oriented model, the notation is
         also not inherently incompatible with functional programming paradigms. For example,
-        pipelines with dot notation when working within a function model in Python are supported by
-        the PyFunctional package [<xref linkend="pyfunctional"/>], which <quote>makes creating data
-          pipelines easy by using chained functional operators</quote>, e.g.:
+        pipelines with dot notation when working within a functional model in Python are supported
+        by the PyFunctional package [<xref linkend="pyfunctional"/>], which <quote>makes creating
+          data pipelines easy by using chained functional operators</quote>, e.g.:
         <programlisting>seq(1, 2, 3).map(lambda x: x * 2).reduce(lambda x, y: x + y)</programlisting></para>
       <para>XPath 3.1 introduced the “arrow operator” (<code>=></code>) for this purpose, so that:
         <programlisting>tokenize((normalize-unicode(upper-case($string))),"\s+")</programlisting>
@@ -654,7 +655,8 @@ print(result)</programlisting>
           <programlisting>$string => upper-case() => normalize-unicode() => tokenize("\s+")</programlisting>[<xref
           linkend="XPath"/>, §3.16] One limitation to this XPath operator is that the value that is
         passed can be used only as the <emphasis role="ital">first</emphasis> argument to the next
-        function, which means that traditional methods must be used when the value fills any non-initial parameter.</para>
+        function, which means that traditional methods must be used when the value fills any
+        non-initial parameter.</para>
     </section>
     <section>
       <title>Variables, templates, and functions</title>
@@ -734,7 +736,7 @@ print(result)</programlisting>
               <listitem>
                 <para>The code that specifies the order of operations in the pipeline does not
                   mention or pass any values explicitly. This means that changing the sequence of
-                  steps does not require changing variable values in the arguments.</para>
+                  steps does not require changing variables in the arguments.</para>
               </listitem>
               <listitem>
                 <para>The code blocks that perform the pipeline operations all expect the same
@@ -964,10 +966,10 @@ print(result)</programlisting>
         <title>Unmatched operations</title>
         <para>At different moments in the development we implemented different treatments of
           operations that are not matched in the single processing template. One option is to let
-          operations listed in the sequence but not associated with processing code pass their logical
-          input, unchanged, along to the next step in the pipeline. This is the simplest form of a
-          stub; the name of the operation is present, but the default behavior if the operation is
-          not defined is to pass:</para>
+          operations listed in the sequence but not associated with processing code pass their
+          logical input, unchanged, along to the next step in the pipeline. This is the simplest
+          form of a stub; the name of the operation is present, but the default behavior if the
+          operation is not defined is to pass:</para>
         <programlisting>&lt;!-- ******************************************* --&gt;
 &lt;!-- Default to continue processing if operate step has no code--&gt;
 &lt;!-- ******************************************* --&gt;
@@ -1066,8 +1068,8 @@ print(result)</programlisting>
           writing system is the same but the character set is different, such as when pre-Unicode
           legacy documents must be converted to Unicode. Sometimes the conversion is from one
           writing system to another, such as when Cyrillic texts are Romanized for library catalog
-          purposes, or when linguistic field data in domain-specific notation are converted to
-          the International Phonetic Alphabet (IPA).</para>
+          purposes, or when linguistic field data in domain-specific notation are converted to the
+          International Phonetic Alphabet (IPA).</para>
         <para>If the mapping from one character representation to another is one to one, it can be
           implemented with a single <code>translate()</code> function. The implementation of
             <code>translate()</code> has the advantage of not suffering from feeding or bleeding
@@ -1324,7 +1326,7 @@ print(result)</programlisting>
       10.4242/BalisageVol15.Birnbaum01.
         <link>https://www.balisage.net/Proceedings/vol15/html/Birnbaum01/BalisageVol15-Birnbaum01.html</link></bibliomixed>
     <bibliomixed xml:id="cocoon" xreflabel="Cocoon">Apache Cocoon.
-      <link>http://cocoon.apache.org/</link></bibliomixed>
+        <link>http://cocoon.apache.org/</link></bibliomixed>
     <!--<bibliomixed xml:id="fuller_2016" xreflabel="Fuller 2016">Fuller, James. <quote>A catalog of
         functional programming idioms in XQuery 3.1.</quote> Presented at <emphasis role="ital"
         >Balisage: The Markup Conference 2016, Washington, DC, August 2 - 5, 2016.</emphasis> In
@@ -1350,11 +1352,11 @@ print(result)</programlisting>
         programming with <code>go to</code> statements</quote>, Computing surveys 6(4): 261–301.
         <link>http://web.archive.org/web/20130731202547/http://pplab.snu.ac.kr/courses/adv_pl05/papers/p261-knuth.pdf</link></bibliomixed>
     <bibliomixed xml:id="koenig_1995" xreflabel="Koenig 1995"><quote>Patterns and
-      antipatterns.</quote>
+        antipatterns.</quote>
       <emphasis role="ital">Journal of object-oriented programming</emphasis> 8(1): 46-48
       (1995)</bibliomixed>
     <bibliomixed xml:id="mcilroy_1964" xreflabel="McIlroy 1964"><quote>The origin of Unix
-      pipes,</quote> Bell Labs document archive.
+        pipes,</quote> Bell Labs document archive.
       <link>http://doc.cat-v.org/unix/pipes/</link></bibliomixed>
     <bibliomixed xml:id="novatchev_2010" xreflabel="Novatchev 2010">Novatchev, Dimitre. Response to
         <quote>Is daisy chaining xslt an accepted practice?</quote>
@@ -1370,7 +1372,7 @@ print(result)</programlisting>
         ambiguous
         matches.</quote><link>https://www.oxygenxml.com/archives/xsl-list/201402/msg00085.html</link></bibliomixed>
     <bibliomixed xml:id="pyfunctional" xreflabel="PyFunctional">PyFunctional (Python package).
-      (<link>https://github.com/EntilZha/PyFunctional</link>)</bibliomixed>
+        (<link>https://github.com/EntilZha/PyFunctional</link>)</bibliomixed>
     <bibliomixed xml:id="sugrue_2010" xreflabel="Sugrue 2010">Sugrue, James. <quote>Visitor pattern
         tutorial with Java examples.</quote>
       <link>https://dzone.com/articles/design-patterns-visitor</link></bibliomixed>
