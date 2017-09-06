@@ -3,8 +3,8 @@
 <?xml-stylesheet type="text/xsl" href="balisage-proceedings-html.xsl"?>
 <article xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
   <title>Patterns and antipatterns in micropipelining within XSLT<footnote>
-      <para>The author is grateful to two anonymous Balisage referees for comments and
-        suggestions.</para>
+      <para>The author is grateful to two anonymous Balisage referees for comments and suggestions,
+        and to John Lumley for the <code>&lt;xsl:iterate></code> example.</para>
     </footnote></title>
   <info>
     <abstract>
@@ -1056,8 +1056,163 @@ print(result)</programlisting>
               created, without requiring any adjustment to the parameters.</para>
           </listitem>
         </itemizedlist>
-        <para/>
       </section>
+    </section>
+    <section>
+      <title>Adapting the visitor pattern to use <code>&lt;xsl:iterate&gt;</code><footnote>
+          <para>I am grateful to John Lumley for introducing me to this pattern, and for supplying
+            the code used here to illustrate it.</para>
+        </footnote></title>
+      <para>The introduction of <code>&lt;xsl:iterate&gt;</code> in XSLT 3.0 suggests an alternative
+        way to implement the visitor pattern.<footnote>
+          <para>Although not all features of XSLT 3.0 streaming are supported in the open source
+            Saxon HE product, <code>&lt;xsl:iterate&gt;</code> is. See <xref
+              linkend="saxonica_xsl-iterate"/></para>
+        </footnote> Consider the following example, which combines the processing pipeline and the
+        text to be transformed in a single XML document:</para>
+      <programlisting>&lt;example&gt;
+    &lt;pipeline xmlns="Pipeline"&gt;
+        &lt;tokenize/&gt;
+        &lt;lower-case/&gt;
+        &lt;swap s1="fox" s2="dog"/&gt;
+        &lt;swap s1="quick" s2="lazy"/&gt;
+        &lt;pipeline&gt;
+            &lt;replace match="b" replace="z"/&gt;
+            &lt;replace match="o" replace="a"/&gt;
+        &lt;/pipeline&gt;
+        &lt;replace match="lazy" replace="eager"/&gt;
+        &lt;capitalize/&gt;
+        &lt;reverse/&gt;
+        &lt;string-join separator="-"/&gt;
+    &lt;/pipeline&gt;
+    &lt;source&gt;
+        &lt;div&gt;
+            &lt;p&gt;The quick BROWN fox jumps OVER the lazy dog&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/source&gt;
+&lt;/example&gt;</programlisting>
+      <para>As in the original visitor pattern example, the pipeline steps are specified as
+        elements, in a custom namespace, to which templates are applied.
+          <code>&lt;pipeline&gt;</code> elements can be nested; this has no effect on the execution
+        (the nesting is flattened), but it can simplify modular development and inclusion. The
+        following XSLT stylesheet applies the pipeline steps in order using
+        <code>xsl:iterate</code>:</para>
+      <programlisting>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:math="http://www.w3.org/2005/xpath-functions/math" exclude-result-prefixes="xs math"
+    xmlns:p="Pipeline" version="3.0"&gt;
+    &lt;xsl:output method="xml" indent="true"/&gt;
+    &lt;xsl:mode on-no-match="shallow-copy"/&gt;
+    &lt;xsl:template match="/"&gt;
+        &lt;xsl:apply-templates select="example/source" mode="#current"&gt;
+            &lt;xsl:with-param name="pipeline" select="example/p:pipeline" tunnel="true"/&gt;
+        &lt;/xsl:apply-templates&gt;
+    &lt;/xsl:template&gt;
+    &lt;xsl:template match="text()[matches(., '\S')]"&gt;
+        &lt;xsl:param name="pipeline" tunnel="true"/&gt;
+        &lt;xsl:call-template name="pipeline"&gt;
+            &lt;xsl:with-param name="input" select="." as="xs:string"/&gt;
+            &lt;xsl:with-param name="pipeline" as="element()" select="$pipeline"/&gt;
+        &lt;/xsl:call-template&gt;
+    &lt;/xsl:template&gt;
+    &lt;xsl:template name="pipeline" as="item()*"&gt;
+        &lt;xsl:param name="input" as="item()*"/&gt;
+        &lt;xsl:param name="pipeline" as="element()"/&gt;
+        &lt;xsl:iterate select="$pipeline/*"&gt;
+            &lt;xsl:param name="input" select="$input"/&gt;
+            &lt;xsl:on-completion&gt;
+                &lt;xsl:sequence select="$input"/&gt;
+            &lt;/xsl:on-completion&gt;
+            &lt;xsl:next-iteration&gt;
+                &lt;xsl:with-param name="input" as="item()*"&gt;
+                    &lt;xsl:apply-templates select="."&gt;
+                        &lt;xsl:with-param name="input" select="$input"/&gt;
+                    &lt;/xsl:apply-templates&gt;
+                &lt;/xsl:with-param&gt;
+            &lt;/xsl:next-iteration&gt;
+        &lt;/xsl:iterate&gt;
+    &lt;/xsl:template&gt;
+    &lt;xsl:template match="p:tokenize" as="xs:string*"&gt;
+        &lt;xsl:param name="input" as="xs:string?"/&gt;
+        &lt;xsl:variable name="split" select="(@split, '\s+')[1]"/&gt;
+        &lt;xsl:sequence select="tokenize($input, $split)"/&gt;
+    &lt;/xsl:template&gt;
+    &lt;xsl:template match="p:string-join" as="xs:string"&gt;
+        &lt;xsl:param name="input" as="item()*"/&gt;
+        &lt;xsl:variable name="sep" select="(@separator, ' ')[1]"/&gt;
+        &lt;xsl:sequence select="string-join($input ! string(.), $sep)"/&gt;
+    &lt;/xsl:template&gt;
+    &lt;xsl:template match="p:lower-case" as="xs:string*"&gt;
+        &lt;xsl:param name="input" as="item()*"/&gt;
+        &lt;xsl:sequence select="$input ! string(.) ! lower-case(.)"/&gt;
+    &lt;/xsl:template&gt;
+    &lt;xsl:template match="p:capitalize" as="xs:string*"&gt;
+        &lt;xsl:param name="input" as="item()*"/&gt;
+        &lt;xsl:sequence
+            select="$input ! string(.) ! (upper-case(substring(., 1, 1)) || lower-case(substring(., 2)))"
+        /&gt;
+    &lt;/xsl:template&gt;
+    &lt;xsl:template match="p:reverse" as="item()*"&gt;
+        &lt;xsl:param name="input" as="item()*"/&gt;
+        &lt;xsl:sequence select="reverse($input)"/&gt;
+    &lt;/xsl:template&gt;
+    &lt;xsl:template match="p:replace" as="xs:string*"&gt;
+        &lt;xsl:param name="input" as="item()*"/&gt;
+        &lt;xsl:variable name="match" select="(@match, ' ')[1]"/&gt;
+        &lt;xsl:variable name="replace" select="(@replace, ' ')[1]"/&gt;
+        &lt;xsl:sequence select="$input ! string(.) ! replace(., $match, $replace)"/&gt;
+    &lt;/xsl:template&gt;
+    &lt;xsl:template match="p:swap" as="xs:string*"&gt;
+        &lt;xsl:param name="input" as="item()*"/&gt;
+        &lt;xsl:variable name="s1" select="@s1"/&gt;
+        &lt;xsl:variable name="s2" select="@s2"/&gt;
+        &lt;xsl:for-each select="$input"&gt;
+            &lt;xsl:variable name="parts" as="xs:string*"&gt;
+                &lt;xsl:analyze-string select="string(.)" regex="{$s1}|{$s2}"&gt;
+                    &lt;xsl:matching-substring&gt;
+                        &lt;xsl:sequence
+                            select="
+                                if (. eq $s1) then
+                                    $s2
+                                else
+                                    $s1"
+                        /&gt;
+                    &lt;/xsl:matching-substring&gt;
+                    &lt;xsl:non-matching-substring&gt;
+                        &lt;xsl:sequence select="."/&gt;
+                    &lt;/xsl:non-matching-substring&gt;
+                &lt;/xsl:analyze-string&gt;
+            &lt;/xsl:variable&gt;
+            &lt;xsl:sequence select="string-join($parts)"/&gt;
+        &lt;/xsl:for-each&gt;
+    &lt;/xsl:template&gt;
+    &lt;xsl:template match="p:pipeline" as="item()*"&gt;
+        &lt;xsl:param name="input" as="item()*"/&gt;
+        &lt;xsl:call-template name="pipeline"&gt;
+            &lt;xsl:with-param name="input" select="$input"/&gt;
+            &lt;xsl:with-param name="pipeline" select="."/&gt;
+        &lt;/xsl:call-template&gt;
+    &lt;/xsl:template&gt;
+&lt;/xsl:stylesheet&gt;</programlisting>
+      <para>The output is:</para>
+      <programlisting>&lt;source&gt;
+    &lt;div&gt;
+        &lt;p&gt;Fax-Quick-The-Aver-Jumps-Dag-Zrawn-Eager-The&lt;/p&gt;
+    &lt;/div&gt;
+&lt;/source&gt;</programlisting>
+      <para>The <code>&lt;xsl:iterate&gt;</code> strategy uses iteration over the children of the
+          <code>&lt;pipeline&gt;</code> element instead of sibling recursion. The example above also
+        relies on separate templates for every element in the <code>Pipeline</code> namespace
+        instead of using a single template and <code>&lt;xsl:choose&gt;</code>, a decision that is
+        independent of the choice between iteration and recursion. The recursion implementation
+        relies on explicit surgery on the list of pipeline steps with the help of the XPath
+          <code>remove()</code> function, as well as a somewhat indirect test for the end of the
+        pipeline, which uses the XPath <code>empty()</code> function to check whether any pipeline
+        steps remain. The iterative approach may therefore feel more natural, since it uses elements
+        with more transparent, self-documenting, names, such as
+          <code>&lt;xsl:next-iteration&gt;</code> and <code>&lt;xsl:on-completion&gt;</code>.</para>
     </section>
     <section>
       <title>Nested calls to the <code>replace()</code> functions</title>
@@ -1373,6 +1528,9 @@ print(result)</programlisting>
         matches.</quote><link>https://www.oxygenxml.com/archives/xsl-list/201402/msg00085.html</link></bibliomixed>
     <bibliomixed xml:id="pyfunctional" xreflabel="PyFunctional">PyFunctional (Python package).
         (<link>https://github.com/EntilZha/PyFunctional</link>)</bibliomixed>
+    <bibliomixed xml:id="saxonica_xsl-iterate" xreflabel="Saxonica &lt;xsl:iterate&gt;"
+        ><quote>xsl:iterate</quote>. <emphasis>Saxon 9.8 Documentation.</emphasis>
+      <link>http://www.saxonica.com/html/documentation/xsl-elements/iterate.html</link></bibliomixed>
     <bibliomixed xml:id="sugrue_2010" xreflabel="Sugrue 2010">Sugrue, James. <quote>Visitor pattern
         tutorial with Java examples.</quote>
       <link>https://dzone.com/articles/design-patterns-visitor</link></bibliomixed>

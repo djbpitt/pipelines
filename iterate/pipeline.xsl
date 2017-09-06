@@ -65,11 +65,11 @@
         <xsl:param name="input" as="item()*"/>
         <xsl:sequence select="reverse($input)"/>
     </xsl:template>
-    <xsl:template match="p:remove" as="item()*">
+    <!--<xsl:template match="p:remove" as="item()*">
         <xsl:param name="input" as="item()*"/>
         <xsl:variable name="match" select="(@match, ' ')[1]"/>
         <xsl:sequence select="$input[not(matches(., $match))]"/>
-    </xsl:template>
+    </xsl:template>-->
 
     <xsl:template match="p:replace" as="xs:string*">
         <xsl:param name="input" as="item()*"/>
