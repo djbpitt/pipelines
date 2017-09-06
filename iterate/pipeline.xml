@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<example>
+    <pipeline xmlns="Pipeline">
+        <tokenize/>
+        <!--<remove match="q"/>-->
+        <lower-case/>
+        <swap s1="fox" s2="dog"/>
+        <swap s1="quick" s2="lazy"/>
+        <pipeline>
+            <replace match="b" replace="z"/>
+            <replace match="o" replace="a"/>
+        </pipeline>
+        <replace match="lazy" replace="eager"/>
+        <capitalize/>
+        <reverse/>
+        <string-join separator="-"/>
+    </pipeline>
+    <source>
+        <div>
+            <p>The quick BROWN fox jumps OVER the lazy dog</p>
+        </div>
+    </source>
+</example>
+
