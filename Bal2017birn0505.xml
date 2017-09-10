@@ -75,8 +75,8 @@
       typed note by Doug McIlroy about Unix. In a summary of <quote>what’s most important</quote>,
       McIlroy writes that that <quote>[w]e should have some ways of coupling programs like garden
         hose—screw in another segment when it becomes necessary to massage data in another
-        way</quote>. [<xref linkend="mcilroy_1964"/>] As for pipelines in an XSLT and XQuery
-      context, Michael Kay writes:<blockquote>
+        way</quote>. [<xref linkend="mcilroy_1964"/>] As for pipelines specifically in an XSLT and
+      XQuery context, Michael Kay writes:<blockquote>
         <para>Constructing an application in the form of a pipeline has many advantages, the main
           ones being (a) that the code of each step in the pipeline is kept very simple; (b) that it
           is very easy to assemble an application from a set of components, thus maximizing the
@@ -573,15 +573,15 @@
         variable before it has been declared), but also by virtue of the way each declaration uses a
         value created by a different declaration.</para>
       <para>Given that variables in XSLT cannot be redeclared, one might wonder why XSLT requires
-        that sibling variable declarations within a stylesheet be declared in the order in which
-        they are referenced. That is, one might wonder why XSLT prohibits ordering sibling
-          <code>&lt;xsl:variable&gt;</code> elements in arbitrary order, much as it is possible to
-        apply templates within one template that references another regardless of the order in which
-        the two are listed in the XSLT code. Whatever the reason for this restriction, it means that
-        rearranging the order in which the functions are applied involves not only changing the
-        references among them, but also modifying the order of the <code>&lt;xsl:variable&gt;</code>
-        elements so that the order of declaration follows the order in which the values are
-        used.</para>
+        that sibling variable declarations within a stylesheet be arranged in conformity with the
+        order in which they are referenced. That is, one might wonder why XSLT prohibits ordering
+        sibling <code>&lt;xsl:variable&gt;</code> elements in arbitrary order, much as it is
+        possible to apply templates within one template that references another regardless of the
+        order in which the two are listed in the XSLT code. Whatever the reason for this
+        restriction, it means that rearranging the order in which the functions are applied involves
+        not only changing the references among them, but also modifying the order of the
+          <code>&lt;xsl:variable&gt;</code> elements so that the order of declaration follows the
+        order in which the values are used.</para>
     </section>
     <section>
       <title>Function chaining</title>
@@ -655,7 +655,7 @@ print(result)</programlisting>
           <programlisting>$string => upper-case() => normalize-unicode() => tokenize("\s+")</programlisting>[<xref
           linkend="XPath"/>, §3.16] One limitation to this XPath operator is that the value that is
         passed can be used only as the <emphasis role="ital">first</emphasis> argument to the next
-        function, which means that traditional methods must be used when the value fills any
+        function, which means that traditional methods must be used when the value supplies any
         non-initial parameter.</para>
     </section>
     <section>
