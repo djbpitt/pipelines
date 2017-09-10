@@ -4,7 +4,8 @@
 <article xmlns="http://docbook.org/ns/docbook" xmlns:xlink="http://www.w3.org/1999/xlink">
   <title>Patterns and antipatterns in micropipelining within XSLT<footnote>
       <para>The author is grateful to two anonymous Balisage referees for comments and suggestions,
-        and to John Lumley for the <code>&lt;xsl:iterate></code> example.</para>
+        to Wendell Piez for the introduction to the visitor pattern, and to John Lumley for the
+          <code>&lt;xsl:iterate></code> example.</para>
     </footnote></title>
   <info>
     <abstract>
@@ -539,7 +540,7 @@
         </footnote> There is good reason that the functional programming language Lisp, known for
         its deeply nested parenthesized constructions, has been glossed humorously as <quote>Lots of
           Irritating Silly Parentheses</quote> and in other equivalent ways.<footnote>
-          <para>see <link>https://xkcd.com/297/</link>. The name is actually derived from
+          <para>See <link>https://xkcd.com/297/</link>. The name is actually derived from
               <quote>LISt Processor</quote>.</para>
         </footnote></para>
       <para>We can improve the legibility by rewriting the code to use convenience variables:</para>
@@ -1401,14 +1402,14 @@ print(result)</programlisting>
         &lt;/pair&gt;
     &lt;/unitary&gt;
 &lt;/pairs&gt;</programlisting>
-        <para>Note that some of the characters in the <code>&lt;multiple&gt;</code> portion of the
-          mapping table also appear in the <code>&lt;unitary&gt;</code> portion.</para>
       </section>
       <section>
         <title>Processing mappings that are not one to one</title>
-        <para>As explained above, mappings that are not one to one must be processed before those
-          that are, and the processing requires the <code>replace()</code> function. This processing
-          is performed with a single user-defined function:</para>
+        <para>Because some of the characters in the <code>&lt;multiple&gt;</code> portion of the
+          mapping table also appear in the <code>&lt;unitary&gt;</code> portion, bleeding
+          constraints require that mappings that are not one to one be processed before those that
+          are, and that processing requires the <code>replace()</code> function. This processing is
+          performed with a single user-defined function:</para>
         <programlisting>&lt;xsl:function name="djb:multireplace" as="xs:string"&gt;
     &lt;!-- this function handles all replacements that aren't one-to-one --&gt;
     &lt;xsl:param name="instring" as="xs:string"/&gt;
